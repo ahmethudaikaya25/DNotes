@@ -46,7 +46,7 @@ The application is built using modern tools and libraries for Android developmen
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/android-note-taking.git
+   git clone https://github.com/ahmethudaikaya25/DNotes.git
    ```
 2. Open the project in Android Studio.
 3. Build and run the application on an Android device or emulator.
