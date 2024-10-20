@@ -10,3 +10,7 @@ local.properties
 .externalNativeBuild
 .cxx
 local.properties
+dependencies.txt
+deployment_keys/
+.idea/
+playstore/
