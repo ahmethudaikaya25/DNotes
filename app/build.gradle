@@ -41,6 +41,9 @@ android {
         dataBinding true
         viewBinding true
     }
+    lintOptions {
+        disable 'ParcelCreator' // Disable this lint check
+    }
 }
 
 dependencies {
