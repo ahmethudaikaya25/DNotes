@@ -26,7 +26,7 @@ jobs:
       run: ./gradlew build
 
     - name: Upload APK as Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: app-apk
-        path: app/build/outputs/apk/debug/app-debug.apk  # Path to the APK (adjust if using release build)
+        name: DNotes_v${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
+        path: app/build/outputs/apk/debug/app-debug.apk
