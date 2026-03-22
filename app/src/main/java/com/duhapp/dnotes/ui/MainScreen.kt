@@ -15,14 +15,19 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -31,22 +36,33 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.duhapp.dnotes.features.manage_category.domain.GetCategories
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryBottomSheetScreen
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryBottomSheetViewModel
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreen
-import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
+import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenIntent
+import com.duhapp.dnotes.features.all_notes.ui.AllNotesViewModel
 import com.duhapp.dnotes.features.home.ui.HomeScreen
+import com.duhapp.dnotes.features.home.ui.HomeScreenEffect
+import com.duhapp.dnotes.features.home.ui.HomeScreenIntent
+import com.duhapp.dnotes.features.home.ui.HomeViewModel
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreen
+import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenEffect
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryViewModel
 import com.duhapp.dnotes.features.note.ui.NoteScreen
-import com.duhapp.dnotes.ui.notifications.NotificationsScreen
-import com.duhapp.dnotes.ui.notifications.NotificationsViewModel
+import com.duhapp.dnotes.features.note.ui.NoteScreenEffect
+import com.duhapp.dnotes.features.note.ui.NoteScreenIntent
+import com.duhapp.dnotes.features.note.ui.NoteViewModel
 import com.duhapp.dnotes.ui.navigation.Screen
 import com.duhapp.dnotes.ui.theme.BottomNavBar
 import com.duhapp.dnotes.ui.theme.BottomNavBarUnselected
 import com.duhapp.dnotes.ui.theme.PrimaryColor
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class BottomNavItem(
     val route: String,
@@ -54,21 +70,35 @@ data class BottomNavItem(
     val label: String
 )
 
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val getCategories: GetCategories
+) : ViewModel() {
+    var categories by mutableStateOf<List<CategoryUIModel>>(emptyList())
+        private set
+
+    init {
+        loadCategories()
+    }
+
+    fun loadCategories() {
+        viewModelScope.launch {
+            categories = getCategories.invoke()
+        }
+    }
+}
+
 @Composable
 fun MainScreen(
-    onNavigateToNote: () -> Unit,
-    onNavigateToAllNotes: (Int) -> Unit,
-    onNavigateToCategoryBottomSheet: () -> Unit
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-    
     val categoryBottomSheetViewModel: CategoryBottomSheetViewModel = hiltViewModel()
-    
-    var showCategoryBottomSheet by remember { mutableStateOf(false) }
-    var bottomSheetCategory by remember { mutableStateOf(CategoryUIModel()) }
-    var bottomSheetShowType by remember { mutableStateOf(CategoryShowType.Add) }
-    var refreshCategoriesTrigger by remember { mutableIntStateOf(0) }
-    
+
+    var showCategoryBottomSheet by rememberSaveable { mutableStateOf(false) }
+    var bottomSheetCategory by rememberSaveable { mutableStateOf(CategoryUIModel()) }
+    var bottomSheetShowType by rememberSaveable { mutableStateOf(CategoryShowType.Add) }
+
     val bottomNavItems = listOf(
         BottomNavItem(
             route = Screen.Home.route,
@@ -84,11 +114,27 @@ fun MainScreen(
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    
-    val showBottomBar = currentDestination?.route in listOf(
+    val currentRoute = currentDestination?.route
+
+    val showBottomBar = currentRoute in listOf(
         Screen.Home.route,
         Screen.ManageCategory.route
     )
+
+    val showFab = showBottomBar
+
+    val onFabClick: () -> Unit = {
+        when (currentRoute) {
+            Screen.Home.route -> {
+                navController.navigate(Screen.Note.createRoute(null))
+            }
+            Screen.ManageCategory.route -> {
+                bottomSheetCategory = CategoryUIModel()
+                bottomSheetShowType = CategoryShowType.Add
+                showCategoryBottomSheet = true
+            }
+        }
+    }
 
     Scaffold(
         containerColor = BottomNavBar,
@@ -125,13 +171,13 @@ fun MainScreen(
             }
         },
         floatingActionButton = {
-            if (showBottomBar) {
+            if (showFab) {
                 FloatingActionButton(
-                    onClick = onNavigateToNote,
+                    onClick = onFabClick,
                     containerColor = PrimaryColor,
-                    contentColor = androidx.compose.ui.graphics.Color.White
+                    contentColor = Color.White
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Note")
+                    Icon(Icons.Default.Add, contentDescription = "Add")
                 }
             }
         }
@@ -146,32 +192,55 @@ fun MainScreen(
                 startDestination = Screen.Home.route
             ) {
                 composable(Screen.Home.route) {
-                    HomeScreen(
-                        onNavigateToNote = { noteItem ->
-                            navController.navigate(Screen.Note.route)
-                        },
-                        onNavigateToAllNotes = { categoryId ->
-                            navController.navigate(Screen.AllNotes.createRoute(categoryId))
+                    val homeViewModel: HomeViewModel = hiltViewModel()
+                    val state by homeViewModel.state.collectAsState()
+
+                    LaunchedEffect(Unit) {
+                        homeViewModel.effect.collectLatest { effect ->
+                            when (effect) {
+                                is HomeScreenEffect.NavigateToNote -> {
+                                    navController.navigate(Screen.Note.createRoute(effect.noteId.toString()))
+                                }
+                                is HomeScreenEffect.NavigateToAllNotes -> {
+                                    navController.navigate(Screen.AllNotes.createRoute(effect.categoryId))
+                                }
+                                is HomeScreenEffect.ShowError -> {}
+                            }
                         }
+                    }
+
+                    HomeScreen(
+                        state = state,
+                        onIntent = { intent -> homeViewModel.processIntent(intent) }
                     )
                 }
                 composable(Screen.ManageCategory.route) {
                     val manageCategoryViewModel: ManageCategoryViewModel = hiltViewModel()
-                    ManageCategoryScreen(
-                        viewModel = manageCategoryViewModel,
-                        onNavigateToCategoryBottomSheet = { category, showType ->
-                            bottomSheetCategory = category
-                            bottomSheetShowType = showType
-                            showCategoryBottomSheet = true
-                        },
-                        onCategorySaved = {
-                            manageCategoryViewModel.onCategoryUpserted()
-                            refreshCategoriesTrigger++
+                    val state by manageCategoryViewModel.state.collectAsState()
+
+                    LaunchedEffect(Unit) {
+                        manageCategoryViewModel.effect.collectLatest { effect ->
+                            when (effect) {
+                                is ManageCategoryScreenEffect.NavigateToCategoryBottomSheet -> {
+                                    bottomSheetCategory = effect.category
+                                    bottomSheetShowType = effect.showType
+                                    showCategoryBottomSheet = true
+                                }
+                                is ManageCategoryScreenEffect.ShowDeleteConfirmation -> {
+                                    mainViewModel.loadCategories()
+                                }
+                                is ManageCategoryScreenEffect.ShowError -> {}
+                            }
                         }
+                    }
+
+                    ManageCategoryScreen(
+                        state = state,
+                        onIntent = { intent -> manageCategoryViewModel.processIntent(intent) }
                     )
                 }
                 composable(Screen.Notifications.route) {
-                    NotificationsScreen(viewModel = NotificationsViewModel())
+                    // NotificationsScreen removed for now
                 }
                 composable(
                     route = Screen.Note.route,
@@ -182,10 +251,32 @@ fun MainScreen(
                             defaultValue = null
                         }
                     )
-                ) {
+                ) { backStackEntry ->
+                    val noteViewModel: NoteViewModel = hiltViewModel()
+                    val state by noteViewModel.state.collectAsState()
+                    val noteItemArg = backStackEntry.arguments?.getString("noteItem")
+
+                    LaunchedEffect(noteItemArg) {
+                        val noteId = noteItemArg?.toIntOrNull()
+                        noteViewModel.processIntent(NoteScreenIntent.LoadNote(noteId))
+                    }
+
+                    LaunchedEffect(Unit) {
+                        noteViewModel.effect.collectLatest { effect ->
+                            when (effect) {
+                                is NoteScreenEffect.NavigateBack -> {
+                                    navController.popBackStack()
+                                }
+                                is NoteScreenEffect.NoteSaved -> {}
+                                is NoteScreenEffect.ShowError -> {}
+                            }
+                        }
+                    }
+
                     NoteScreen(
-                        onNavigateBack = { navController.popBackStack() },
-                        onCategoryClick = { }
+                        state = state,
+                        onIntent = { intent -> noteViewModel.processIntent(intent) },
+                        categories = mainViewModel.categories
                     )
                 }
                 composable(
@@ -195,12 +286,32 @@ fun MainScreen(
                     )
                 ) { backStackEntry ->
                     val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
-                    AllNotesScreen(
-                        categoryId = categoryId,
-                        onNavigateBack = { navController.popBackStack() },
-                        onNavigateToNote = { note ->
-                            // TODO: Navigate to note
+                    val allNotesViewModel: AllNotesViewModel = hiltViewModel()
+                    val state by allNotesViewModel.state.collectAsState()
+
+                    LaunchedEffect(categoryId) {
+                        allNotesViewModel.processIntent(AllNotesScreenIntent.LoadNotes(categoryId))
+                    }
+
+                    LaunchedEffect(Unit) {
+                        allNotesViewModel.effect.collectLatest { effect ->
+                            when (effect) {
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.NavigateToNote -> {
+                                    navController.navigate(Screen.Note.createRoute(effect.note.id.toString()))
+                                }
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.NavigateBack -> {
+                                    navController.popBackStack()
+                                }
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.ShowMoveDialog -> {}
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.NotesDeleted -> {}
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.ShowError -> {}
+                            }
                         }
+                    }
+
+                    AllNotesScreen(
+                        state = state,
+                        onIntent = { intent -> allNotesViewModel.processIntent(intent) }
                     )
                 }
             }
@@ -214,6 +325,7 @@ fun MainScreen(
             viewModel = categoryBottomSheetViewModel,
             onSave = { savedCategory ->
                 showCategoryBottomSheet = false
+                mainViewModel.loadCategories()
             },
             onDismiss = {
                 showCategoryBottomSheet = false

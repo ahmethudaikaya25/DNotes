@@ -17,12 +17,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,10 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.duhapp.dnotes.features.home.HomeUIEvent
-import com.duhapp.dnotes.features.home.HomeUIState
-import com.duhapp.dnotes.features.home.HomeViewModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BasicNoteUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.HomeCategoryUIModel
@@ -42,46 +36,45 @@ import com.duhapp.dnotes.ui.theme.PrimaryColor
 
 @Composable
 fun HomeScreen(
-    onNavigateToNote: (BaseNoteUIModel) -> Unit,
-    onNavigateToAllNotes: (Int) -> Unit,
-    viewModel: HomeViewModel = hiltViewModel()
+    state: HomeScreenState,
+    onIntent: (HomeScreenIntent) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.loadCategories()
-    }
-
-    when (val state = uiState) {
-        is HomeUIState.Success -> {
-            HomeContent(
-                categories = state.categories,
-                onNoteClick = { noteUIModel ->
-                    viewModel.onNoteClick(noteUIModel)
-                },
-                onViewAllClick = { homeCategoryUIModel ->
-                    viewModel.onCategoryViewAllClicked(homeCategoryUIModel)
-                }
-            )
-        }
-        is HomeUIState.Error -> {
+    when {
+        state.isLoading -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = PrimaryColor)
+            }
+        }
+        state.error != null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = state.customException.message ?: "Error",
+                    text = state.error,
                     color = MaterialTheme.colorScheme.error
                 )
             }
         }
         else -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Loading...")
-            }
+            HomeContent(
+                categories = state.categories,
+                onNoteClick = { note ->
+                    onIntent(HomeScreenIntent.NoteClicked(note.id))
+                },
+                onViewAllClick = { category ->
+                    onIntent(HomeScreenIntent.ViewAllClicked(category.id))
+                },
+                modifier = modifier
+            )
         }
     }
 }
@@ -90,22 +83,38 @@ fun HomeScreen(
 fun HomeContent(
     categories: List<HomeCategoryUIModel>,
     onNoteClick: (BaseNoteUIModel) -> Unit,
-    onViewAllClick: (HomeCategoryUIModel) -> Unit
+    onViewAllClick: (HomeCategoryUIModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundColor)
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
-        contentPadding = PaddingValues(top = 24.dp, bottom = 16.dp)
-    ) {
-        items(categories) { category ->
-            HomeCategorySection(
-                category = category,
-                onNoteClick = onNoteClick,
-                onViewAllClick = onViewAllClick
+    if (categories.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(BackgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No notes yet. Tap + to create one!",
+                color = Color.Gray,
+                fontSize = 16.sp
             )
+        }
+    } else {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .background(BackgroundColor)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+            contentPadding = PaddingValues(top = 24.dp, bottom = 16.dp)
+        ) {
+            items(categories) { category ->
+                HomeCategorySection(
+                    category = category,
+                    onNoteClick = onNoteClick,
+                    onViewAllClick = onViewAllClick
+                )
+            }
         }
     }
 }
@@ -157,13 +166,14 @@ fun HomeCategorySection(
 @Composable
 fun NoteListItem(
     note: BasicNoteUIModel,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val backgroundColor = getColorFromNoteColor(note.color)
-    val categoryBackgroundColor = getDarkColorFromNoteColor(note.color)
+    val backgroundColor = getNoteColor(note.color)
+    val categoryBackgroundColor = getCategoryColor(note.color)
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .width(180.dp)
             .height(252.dp)
             .clickable(onClick = onClick),
@@ -217,8 +227,7 @@ fun NoteListItem(
     }
 }
 
-@Composable
-fun getColorFromNoteColor(colorRes: Int): Color {
+fun getNoteColor(colorRes: Int): Color {
     return when (colorRes) {
         0 -> Color(0xFFFFCDD2)
         1 -> Color(0xFFC8E6C9)
@@ -232,8 +241,7 @@ fun getColorFromNoteColor(colorRes: Int): Color {
     }
 }
 
-@Composable
-fun getDarkColorFromNoteColor(colorRes: Int): Color {
+fun getCategoryColor(colorRes: Int): Color {
     return when (colorRes) {
         0 -> Color(0xFFD32F2F)
         1 -> Color(0xFF388E3C)
@@ -243,6 +251,6 @@ fun getDarkColorFromNoteColor(colorRes: Int): Color {
         5 -> Color(0xFF0097A7)
         6 -> Color(0xFF5D4037)
         7 -> Color(0xFFF57C00)
-        else -> Color(0xFF000000)
+        else -> Color(0xFF4CAF50)
     }
 }

@@ -8,5 +8,6 @@ interface NoteRepository {
     suspend fun update(noteUIModel: BaseNoteUIModel)
     suspend fun updateNotes(notes: List<BaseNoteUIModel>)
     suspend fun getNoteByCategory(categoryId: CategoryUIModel): List<BaseNoteUIModel>
+    suspend fun getNoteById(id: Int): BaseNoteUIModel?
     suspend fun deleteNotes(notes: List<BaseNoteUIModel>)
 }

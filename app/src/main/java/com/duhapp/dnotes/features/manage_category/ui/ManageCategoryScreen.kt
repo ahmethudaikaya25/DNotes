@@ -1,6 +1,5 @@
 package com.duhapp.dnotes.features.manage_category.ui
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,16 +16,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,59 +31,54 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.ui.theme.BackgroundColor
 import com.duhapp.dnotes.ui.theme.PrimaryColor
 
 @Composable
 fun ManageCategoryScreen(
-    onNavigateToCategoryBottomSheet: (CategoryUIModel, CategoryShowType) -> Unit,
-    onCategorySaved: () -> Unit = {},
-    viewModel: ManageCategoryViewModel = hiltViewModel()
+    state: ManageCategoryScreenState,
+    onIntent: (ManageCategoryScreenIntent) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.setEvent(ManageCategoryUIEvent.Loading)
-    }
-
-    when (val state = uiState) {
-        is ManageCategoryUIState.Success -> {
-            ManageCategoryContent(
-                categories = state.categoryList,
-                onCategoryClick = { category ->
-                    viewModel.handleCategorySelect(category, 0)
-                    onNavigateToCategoryBottomSheet(category, CategoryShowType.Edit)
-                },
-                onAddCategoryClick = {
-                    viewModel.onAddCategoryClick()
-                    onNavigateToCategoryBottomSheet(CategoryUIModel(), CategoryShowType.Add)
-                },
-                onDeleteCategory = { category ->
-                    viewModel.handleDeleteCategory(category, 0)
-                }
-            )
-        }
-        is ManageCategoryUIState.Error -> {
+    when {
+        state.isLoading -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = PrimaryColor)
+            }
+        }
+        state.error != null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = state.customException.message ?: "Error",
-                    color = Color.Red
+                    text = state.error,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
         else -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Loading...")
-            }
+            ManageCategoryContent(
+                categories = state.categories,
+                onCategoryClick = { category ->
+                    onIntent(ManageCategoryScreenIntent.CategoryClicked(category))
+                },
+                onAddCategoryClick = {
+                    onIntent(ManageCategoryScreenIntent.AddCategoryClicked)
+                },
+                onDeleteCategory = { category ->
+                    onIntent(ManageCategoryScreenIntent.DeleteCategory(category))
+                },
+                modifier = modifier
+            )
         }
     }
 }
@@ -96,9 +88,10 @@ fun ManageCategoryContent(
     categories: List<CategoryUIModel>,
     onCategoryClick: (CategoryUIModel) -> Unit,
     onAddCategoryClick: () -> Unit,
-    onDeleteCategory: (CategoryUIModel) -> Unit
+    onDeleteCategory: (CategoryUIModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -145,13 +138,14 @@ fun ManageCategoryContent(
 @Composable
 fun CategoryListItem(
     category: CategoryUIModel,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val backgroundColor = getCategoryColor(category.color.color.darkColor)
+    val backgroundColor = getCategoryColor(category.color.color.ordinal)
     val emojiBackgroundColor = backgroundColor.copy(alpha = 0.2f)
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),

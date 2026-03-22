@@ -1,16 +1,11 @@
 package com.duhapp.dnotes.features.note.ui
 
 import androidx.lifecycle.viewModelScope
-import com.duhapp.dnotes.R
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.base.domain.CustomException
-import com.duhapp.dnotes.features.base.domain.asCustomException
-import com.duhapp.dnotes.features.base.ui.FragmentUIEvent
-import com.duhapp.dnotes.features.base.ui.FragmentUIState
-import com.duhapp.dnotes.features.base.ui.FragmentViewModel
-import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
+import com.duhapp.dnotes.features.base.ui.mvi.MviViewModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.DEFAULT_NOTE_MODEL
 import com.duhapp.dnotes.features.note.domain.GetDefaultCategory
+import com.duhapp.dnotes.features.note.domain.GetNoteById
 import com.duhapp.dnotes.features.note.domain.UpsertNote
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -21,215 +16,121 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val upsertNote: UpsertNote,
     private val getDefaultCategory: GetDefaultCategory,
-) : FragmentViewModel<NoteUIEvent, NoteUIState>() {
-    var selectedCategory: CategoryUIModel? = DEFAULT_NOTE_MODEL.category
-    var lastUIEvent: NoteUIEvent? = null
-    var lastSuccesState: NoteUIState.Success? = null
+    private val getNoteById: GetNoteById,
+) : MviViewModel<NoteScreenIntent, NoteScreenState, NoteScreenEffect>(
+    initialState = NoteScreenState()
+) {
 
-    override fun setState(state: NoteUIState) {
-        Timber.d( "setState: $state")
-        if (state is NoteUIState.Success) {
-            lastSuccesState = state
-        }
-        Timber.d( "lastSuccesState: $lastSuccesState")
-        super.setState(state)
+    init {
+        processIntent(NoteScreenIntent.LoadNote(null))
     }
 
-    override fun setEvent(event: NoteUIEvent) = viewModelScope.launch {
-        lastUIEvent = event
-        super.setEvent(event)
-    }
-
-
-    private fun save() {
-        withStateValue {
-            run {
-                try {
-                    val noteModel = upsertNote.invoke(
-                        it.getSuccessNote()!!
-                    )
-                    setState(
-                        NoteUIState.Success(
-                            baseNoteUIModel = noteModel,
-                            editableMode = false,
-                        )
-                    )
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    setState(
-                        NoteUIState.Error(
-                            e.asCustomException(
-                                message = R.string.Note_Could_Not_Be_Updated
-                            )
-                        ),
-                    )
-                }
-            }
-            it
+    override fun handleIntent(intent: NoteScreenIntent) {
+        when (intent) {
+            is NoteScreenIntent.LoadNote -> loadNote(intent.noteId)
+            is NoteScreenIntent.UpdateTitle -> updateTitle(intent.title)
+            is NoteScreenIntent.UpdateBody -> updateBody(intent.body)
+            is NoteScreenIntent.SelectCategory -> selectCategory(intent.category)
+            is NoteScreenIntent.SaveNote -> saveNote()
+            is NoteScreenIntent.ShowCategoryBottomSheet -> showCategoryBottomSheet()
+            is NoteScreenIntent.HideCategoryBottomSheet -> hideCategoryBottomSheet()
+            is NoteScreenIntent.NavigateBack -> navigateBack()
         }
     }
 
-    fun setBackClicked() {
-        setEvent(NoteUIEvent.BackButtonClicked)
-    }
-
-    fun saveAndGoBackStack() {
-        withStateValue {
-            run {
-                try {
-                    val noteModel = upsertNote.invoke(
-                        it.getSuccessNote()!!
-                    )
-                    setState(
-                        NoteUIState.Success(
-                            baseNoteUIModel = noteModel,
-                            editableMode = false,
-                        )
-                    )
-                    setEvent(NoteUIEvent.GoToBackStack)
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    val errorState = NoteUIState.Error(
-                        e.asCustomException(
-                            message = R.string.Note_Could_Not_Be_Updated
-                        )
-                    )
-                    setState(
-                        errorState
-                    )
-                    setEvent(NoteUIEvent.ShowWarningDialogBeforeExit(errorState.customException))
-                }
-            }
-            it
-        }
-    }
-
-    fun onCategorySelected(category: CategoryUIModel) {
-        selectedCategory = category
-        setState(
-            withStateValue { state ->
-                return@withStateValue if (state.isSuccess()) {
-                    val noteModel = state.getSuccessNote()!!
-                    noteModel.category = category
-                    NoteUIState.Success(
-                        baseNoteUIModel = noteModel,
-                        editableMode = true,
-                    )
-                } else state
-            }
-        )
-        setEvent(NoteUIEvent.CollapseBottomSheet)
-    }
-
-    fun initStateWithLastSuccessState() {
-        lastSuccesState?.let {
-            setState(
-                NoteUIState.Success(
-                    baseNoteUIModel = it.baseNoteUIModel,
-                    editableMode = true,
-                )
-            )
-        } ?: initState(null)
-    }
-
-    fun initState(args: NoteFragmentArgs?) {
-        setState(
-            NoteUIState.Idle
-        )
-        if (args == null || args.NoteItem == null) {
-            Timber.d("Insert mode opened")
-            run {
-                try {
+    private fun loadNote(noteId: Int?) {
+        viewModelScope.launch {
+            setState { copy(isLoading = true, error = null) }
+            try {
+                if (noteId == null || noteId == 0) {
                     val defaultCategory = getDefaultCategory.invoke()
-                    val state = uiState.value!!
-                    var note = state.getSuccessNote() ?: DEFAULT_NOTE_MODEL.newCopy()
-                    note = note.newCopy().apply {
-                        category = defaultCategory
-                    }
-                    selectedCategory = note.category
-                    setState(
-                        NoteUIState.Success(
-                            baseNoteUIModel = note,
-                            editableMode = true,
+                    setState {
+                        copy(
+                            isLoading = false,
+                            noteId = null,
+                            title = "",
+                            body = "",
+                            category = defaultCategory,
+                            isEditable = true
                         )
-                    )
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    setState(
-                        NoteUIState.Error(
-                            e.asCustomException(
-                                message = R.string.Note_Could_Not_Be_Updated
+                    }
+                } else {
+                    val note = getNoteById.invoke(noteId)
+                    if (note != null) {
+                        setState {
+                            copy(
+                                isLoading = false,
+                                noteId = note.id,
+                                title = note.title,
+                                body = note.body,
+                                category = note.category,
+                                isEditable = true
                             )
-                        ),
-                    )
+                        }
+                    } else {
+                        val defaultCategory = getDefaultCategory.invoke()
+                        setState {
+                            copy(
+                                isLoading = false,
+                                noteId = null,
+                                title = "",
+                                body = "",
+                                category = defaultCategory,
+                                isEditable = true
+                            )
+                        }
+                    }
                 }
-            }
-        } else {
-            Timber.d( "Update mode opened")
-            args.NoteItem.let {
-                selectedCategory = it.category
-                setState(
-                    NoteUIState.Success(
-                        baseNoteUIModel = it,
-                        editableMode = true,
-                    )
-                )
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(isLoading = false, error = e.message ?: "Failed to load note") }
             }
         }
     }
 
-    fun setEditable(editable: Boolean) {
-        setState(
-            withStateValue {
-                if (it.isSuccess()) {
-                    NoteUIState.Success(
-                        it.getSuccessNote()!!,
-                        editable
-                    )
-                } else it
+    private fun updateTitle(title: String) {
+        setState { copy(title = title) }
+    }
+
+    private fun updateBody(body: String) {
+        setState { copy(body = body) }
+    }
+
+    private fun selectCategory(category: CategoryUIModel) {
+        setState { copy(category = category, showCategoryBottomSheet = false) }
+    }
+
+    private fun saveNote() {
+        viewModelScope.launch {
+            setState { copy(isLoading = true) }
+            try {
+                val note = DEFAULT_NOTE_MODEL.newCopy().apply {
+                    this.title = currentState.title
+                    this.body = currentState.body
+                    this.category = currentState.category
+                    currentState.noteId?.let { this.id = it }
+                }
+                upsertNote.invoke(note)
+                setState { copy(isLoading = false) }
+                setEffect(NoteScreenEffect.NoteSaved)
+                setEffect(NoteScreenEffect.NavigateBack)
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(isLoading = false, error = e.message ?: "Failed to save note") }
+                setEffect(NoteScreenEffect.ShowError(e.message ?: "Failed to save note"))
             }
-        )
+        }
     }
 
-    fun saveAccordingToLastUIEvent() {
-        if (lastUIEvent !is NoteUIEvent.BackButtonClicked)
-            save()
+    private fun showCategoryBottomSheet() {
+        setState { copy(showCategoryBottomSheet = true) }
     }
-}
 
-sealed interface NoteUIEvent : FragmentUIEvent {
-    object GoToBackStack : NoteUIEvent
-    data class ShowWarningDialogBeforeExit(
-        val customException: CustomException
-    ) : NoteUIEvent
+    private fun hideCategoryBottomSheet() {
+        setState { copy(showCategoryBottomSheet = false) }
+    }
 
-    object BackButtonClicked : NoteUIEvent
-    object CollapseBottomSheet : NoteUIEvent
-}
-
-sealed interface NoteUIState : FragmentUIState {
-    object Idle : NoteUIState
-
-    data class Success(
-        var baseNoteUIModel: BaseNoteUIModel = DEFAULT_NOTE_MODEL.newCopy(),
-        var editableMode: Boolean = true,
-    ) : NoteUIState
-
-    data class Error(
-        var customException: CustomException
-    ) : NoteUIState
-
-    fun isSuccess() = this is Success
-
-    fun isError() = this is Error
-
-    fun getSuccessNote() = if (isSuccess()) (this as Success).baseNoteUIModel else null
-
-    fun setSuccessTitle(title: String) =
-        if (isSuccess()) (this as Success).baseNoteUIModel.title = title else Unit
-
-    fun setSuccessBody(body: String) =
-        if (isSuccess()) (this as Success).baseNoteUIModel.body = body else Unit
-
-    fun getSuccessEditableMode() = isSuccess() && (this as Success).editableMode
+    private fun navigateBack() {
+        setEffect(NoteScreenEffect.NavigateBack)
+    }
 }

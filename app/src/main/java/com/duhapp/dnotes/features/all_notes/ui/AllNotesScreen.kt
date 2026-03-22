@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,24 +16,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,142 +42,123 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BasicNoteUIModel
-import com.duhapp.dnotes.features.note.ui.getDarkColorFromOrdinal
-import com.duhapp.dnotes.features.note.ui.getLightColorFromOrdinal
 import com.duhapp.dnotes.ui.theme.BackgroundColor
+import com.duhapp.dnotes.ui.theme.PrimaryColor
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AllNotesScreen(
-    categoryId: Int,
-    onNavigateBack: () -> Unit,
-    onNavigateToNote: (BaseNoteUIModel) -> Unit,
-    viewModel: AllNotesViewModel = hiltViewModel()
+    state: AllNotesScreenState,
+    onIntent: (AllNotesScreenIntent) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    var showMenu by remember { mutableStateOf(false) }
+    when {
+        state.isLoading -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = PrimaryColor)
+            }
+        }
+        state.error != null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = state.error,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+        else -> {
+            val headerColor = getCategoryColor(state.category.color.color.ordinal)
 
-    LaunchedEffect(categoryId) {
-        viewModel.initiate(categoryId)
-    }
-
-    val state = uiState as? AllNotesState.Success
-    val category = state?.category ?: CategoryUIModel()
-    val notes = state?.notes ?: emptyList()
-    val isSelectable = state?.isSelectable ?: false
-    val headerColor = getDarkColorFromOrdinal(category.color.color.darkColor)
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundColor)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(headerColor)
-                .padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .background(BackgroundColor)
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .background(headerColor)
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = category.emoji,
-                        fontSize = 20.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = category.name,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f)
-                )
-
-                if (isSelectable) {
-                    Box {
-                        IconButton(onClick = { showMenu = true }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Menu",
-                                tint = Color.White
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.White.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = state.category.emoji,
+                                fontSize = 20.sp
                             )
                         }
-                        DropdownMenu(
-                            expanded = showMenu,
-                            onDismissRequest = { showMenu = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Delete Selected") },
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = state.category.name,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                if (state.notes.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No notes found")
+                    }
+                } else {
+                    FlowRow(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        state.notes.filterIsInstance<BasicNoteUIModel>().forEach { note ->
+                            AllNotesNoteItem(
+                                note = note,
+                                isSelectable = state.isSelectable,
+                                isSelected = state.selectedNoteIds.contains(note.id),
                                 onClick = {
-                                    viewModel.deleteSelectedNotes()
-                                    showMenu = false
+                                    onIntent(AllNotesScreenIntent.NoteClicked(note))
                                 },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Delete, contentDescription = null)
+                                onLongClick = {
+                                    onIntent(AllNotesScreenIntent.NoteLongClicked(note))
+                                },
+                                onEdit = {
+                                    onIntent(AllNotesScreenIntent.NoteClicked(note))
+                                },
+                                onDelete = {
+                                    onIntent(AllNotesScreenIntent.DeleteNote(note))
+                                },
+                                onMove = {
+                                    onIntent(AllNotesScreenIntent.MoveNote(note))
                                 }
                             )
                         }
                     }
-                }
-            }
-        }
-
-        if (notes.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No notes found")
-            }
-        } else {
-            FlowRow(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                notes.filterIsInstance<BasicNoteUIModel>().forEach { note ->
-                    AllNotesNoteItem(
-                        note = note,
-                        isSelectable = isSelectable,
-                        isSelected = note.isSelected,
-                        onClick = {
-                            if (isSelectable) {
-                                viewModel.onNoteClick(note)
-                            } else {
-                                onNavigateToNote(note)
-                            }
-                        },
-                        onLongClick = {
-                            viewModel.enableSelectionModeAndSelectANote(note)
-                        },
-                        onEdit = {
-                            onNavigateToNote(note)
-                        },
-                        onDelete = {
-                            viewModel.onDeleteNoteClick(note)
-                        },
-                        onMove = {
-                            viewModel.onMoveNoteClick(note)
-                        }
-                    )
                 }
             }
         }
@@ -198,14 +174,15 @@ fun AllNotesNoteItem(
     onLongClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onMove: () -> Unit
+    onMove: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val backgroundColor = getLightColorFromOrdinal(note.color)
-    val categoryBackgroundColor = getDarkColorFromOrdinal(note.color)
+    val backgroundColor = getNoteColor(note.color)
+    val categoryBackgroundColor = getCategoryColor(note.color)
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .width(180.dp)
             .clickable(onClick = onClick)
             .then(
@@ -328,5 +305,33 @@ fun AllNotesNoteItem(
                 }
             }
         }
+    }
+}
+
+fun getNoteColor(colorRes: Int): Color {
+    return when (colorRes) {
+        0 -> Color(0xFFFFCDD2)
+        1 -> Color(0xFFC8E6C9)
+        2 -> Color(0xFFBBDEFB)
+        3 -> Color(0xFFFFF9C4)
+        4 -> Color(0xFFE1BEE7)
+        5 -> Color(0xFFB2EBF2)
+        6 -> Color(0xFFD7CCC8)
+        7 -> Color(0xFFFFE0B2)
+        else -> Color(0xFFFFFFFF)
+    }
+}
+
+fun getCategoryColor(colorOrdinal: Int): Color {
+    return when (colorOrdinal) {
+        0 -> Color(0xFFD32F2F)
+        1 -> Color(0xFF388E3C)
+        2 -> Color(0xFF1976D2)
+        3 -> Color(0xFFFBC02D)
+        4 -> Color(0xFF7B1FA2)
+        5 -> Color(0xFF0097A7)
+        6 -> Color(0xFF5D4037)
+        7 -> Color(0xFFF57C00)
+        else -> Color(0xFF4CAF50)
     }
 }

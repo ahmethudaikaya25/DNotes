@@ -166,6 +166,34 @@ class CategoryBottomSheetViewModel @Inject constructor(
             )
         }
     }
+
+    fun onNameChanged(name: String) {
+        val state = uiState.value
+        if (state != null && state.isSuccess()) {
+            val category = state.getSuccessCategory()?.apply { this.name = name } ?: return
+            setState(
+                CategoryBottomSheetUIState.Success(
+                    colors = state.getSuccessColors() ?: emptyList(),
+                    categoryUIModel = category,
+                    state.getSuccessCategoryShowType()!!
+                )
+            )
+        }
+    }
+
+    fun onDescriptionChanged(description: String) {
+        val state = uiState.value
+        if (state != null && state.isSuccess()) {
+            val category = state.getSuccessCategory()?.apply { this.description = description } ?: return
+            setState(
+                CategoryBottomSheetUIState.Success(
+                    colors = state.getSuccessColors() ?: emptyList(),
+                    categoryUIModel = category,
+                    state.getSuccessCategoryShowType()!!
+                )
+            )
+        }
+    }
 }
 
 data class FormData(

@@ -9,10 +9,10 @@ import com.duhapp.dnotes.features.add_or_update_category.data.CategoryRepository
 import com.duhapp.dnotes.features.add_or_update_category.data.CategoryRepositoryImpl
 import com.duhapp.dnotes.features.note.data.NoteRepository
 import com.duhapp.dnotes.features.note.data.NoteRepositoryImpl
+import com.duhapp.dnotes.features.note.domain.GetNoteById
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
@@ -38,7 +38,12 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(noteDao: NoteDao): NoteRepository {
-        return NoteRepositoryImpl(noteDao, Dispatchers.IO)
+    fun provideNoteRepository(noteDao: NoteDao, categoryRepository: CategoryRepository): NoteRepository {
+        return NoteRepositoryImpl(noteDao, categoryRepository, Dispatchers.IO)
+    }
+
+    @Provides
+    fun provideGetNoteById(noteRepository: NoteRepository): GetNoteById {
+        return GetNoteById(noteRepository)
     }
 }

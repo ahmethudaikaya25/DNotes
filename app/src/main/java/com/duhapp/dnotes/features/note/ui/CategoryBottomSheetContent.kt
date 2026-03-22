@@ -11,29 +11,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryViewModel
 import com.duhapp.dnotes.ui.theme.BackgroundColor
 
 @Composable
 fun CategoryBottomSheetContent(
     selectedCategory: CategoryUIModel,
+    categories: List<CategoryUIModel>,
     onCategorySelected: (CategoryUIModel) -> Unit,
-    onDismiss: () -> Unit,
-    viewModel: ManageCategoryViewModel = hiltViewModel()
+    onDismiss: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val categories = (uiState as? com.duhapp.dnotes.features.manage_category.ui.ManageCategoryUIState.Success)?.categoryList ?: emptyList()
-
     Column(
         modifier = Modifier
             .fillMaxWidth()

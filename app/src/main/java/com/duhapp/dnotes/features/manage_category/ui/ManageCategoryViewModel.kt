@@ -1,16 +1,15 @@
 package com.duhapp.dnotes.features.manage_category.ui
 
+import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.R
 import com.duhapp.dnotes.features.add_or_update_category.domain.DeleteCategory
+import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.base.domain.CustomException
-import com.duhapp.dnotes.features.base.domain.asCustomException
-import com.duhapp.dnotes.features.base.ui.FragmentUIEvent
-import com.duhapp.dnotes.features.base.ui.FragmentUIState
-import com.duhapp.dnotes.features.base.ui.FragmentViewModel
+import com.duhapp.dnotes.features.base.ui.mvi.MviViewModel
 import com.duhapp.dnotes.features.manage_category.domain.GetCategories
 import com.duhapp.dnotes.features.manage_category.domain.UndoCategory
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,62 +18,75 @@ class ManageCategoryViewModel @Inject constructor(
     private val getCategories: GetCategories,
     private val deleteCategory: DeleteCategory,
     private val undoCategory: UndoCategory,
-) : FragmentViewModel<ManageCategoryUIEvent, ManageCategoryUIState>() {
+) : MviViewModel<ManageCategoryScreenIntent, ManageCategoryScreenState, ManageCategoryScreenEffect>(
+    initialState = ManageCategoryScreenState()
+) {
+
     init {
-        setEvent(ManageCategoryUIEvent.Loading)
-        loadCategories()
+        processIntent(ManageCategoryScreenIntent.LoadCategories)
+    }
+
+    override fun handleIntent(intent: ManageCategoryScreenIntent) {
+        when (intent) {
+            is ManageCategoryScreenIntent.LoadCategories -> loadCategories()
+            is ManageCategoryScreenIntent.CategoryClicked -> handleCategoryClicked(intent.category)
+            is ManageCategoryScreenIntent.AddCategoryClicked -> handleAddCategoryClicked()
+            is ManageCategoryScreenIntent.DeleteCategory -> handleDeleteCategory(intent.category)
+        }
     }
 
     private fun loadCategories() {
-        run {
+        viewModelScope.launch {
+            setState { copy(isLoading = true, error = null) }
             try {
-                val list = getCategories.invoke()
-                setState(ManageCategoryUIState.Success(list))
-            } catch (exception: Exception) {
-                Timber.e("ManageCategoryViewModel", "loadCategories: ", exception)
-                setStateAndRunMethodAfterDelay(
-                    ManageCategoryUIState.Error(
-                        exception.asCustomException(
-                            message = R.string.Error_While_Fetching_Category,
-                        )
-                    ),
-                    1000
-                ) {
-                    loadCategories()
-                }
+                val categories = getCategories.invoke()
+                setState { copy(isLoading = false, categories = categories) }
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(isLoading = false, error = e.message ?: "Failed to load categories") }
             }
         }
     }
 
-    fun handleCategorySelect(category: CategoryUIModel, position: Int) {
-        setEvent(ManageCategoryUIEvent.OnCategorySelected(category.copy()))
+    private fun handleCategoryClicked(category: CategoryUIModel) {
+        setEffect(
+            ManageCategoryScreenEffect.NavigateToCategoryBottomSheet(
+                category = category,
+                showType = CategoryShowType.Edit
+            )
+        )
     }
 
-    fun onAddCategoryClick() {
-        setEvent(ManageCategoryUIEvent.NavigateAddCategory)
+    private fun handleAddCategoryClicked() {
+        setEffect(
+            ManageCategoryScreenEffect.NavigateToCategoryBottomSheet(
+                category = CategoryUIModel(),
+                showType = CategoryShowType.Add
+            )
+        )
     }
 
-    fun handleDeleteCategory(categoryUIModel: CategoryUIModel, position: Int) {
-        run {
+    private fun handleDeleteCategory(category: CategoryUIModel) {
+        viewModelScope.launch {
             try {
-                deleteCategory.invoke(categoryUIModel)
-                setEvent(
-                    ManageCategoryUIEvent.OnCategoryDeleted(categoryUIModel)
-                )
+                deleteCategory.invoke(category)
+                setEffect(ManageCategoryScreenEffect.ShowDeleteConfirmation(category))
                 loadCategories()
-            } catch (exception: Exception) {
-                Timber.e("ManageCategoryViewModel", "handleDeleteCategory: ", exception)
-                setStateAndRunMethodAfterDelay(
-                    ManageCategoryUIState.Error(
-                        exception.asCustomException(
-                            message = R.string.Error_While_Deleting_Category,
-                        )
-                    ),
-                    1000
-                ) {
-                    loadCategories()
-                    setEvent(ManageCategoryUIEvent.RefreshCategoryListElement(position))
-                }
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = e.message ?: "Failed to delete category") }
+            }
+        }
+    }
+
+    fun onUndoDelete() {
+        viewModelScope.launch {
+            try {
+                undoCategory.invoke()
+                loadCategories()
+            } catch (e: Exception) {
+                Timber.e(e)
+                setState { copy(error = e.message ?: "Failed to undo delete") }
             }
         }
     }
@@ -82,58 +94,4 @@ class ManageCategoryViewModel @Inject constructor(
     fun onCategoryUpserted() {
         loadCategories()
     }
-
-    fun onUndoDelete() {
-        run {
-            try {
-                undoCategory.invoke()
-                loadCategories()
-            } catch (exception: Exception) {
-                Timber.e("ManageCategoryViewModel", "onUndoDelete: ", exception)
-                setStateAndRunMethodAfterDelay(
-                    ManageCategoryUIState.Error(
-                        exception.asCustomException(
-                            message = R.string.Error_While_Undoing_Category_Deletion,
-                        )
-                    ),
-                    1000
-                ) {
-                    loadCategories()
-                }
-            }
-        }
-    }
-
-}
-
-sealed interface ManageCategoryUIState : FragmentUIState {
-    data class Success(
-        val categoryList: List<CategoryUIModel> = emptyList(),
-    ) : ManageCategoryUIState
-
-    data class Error(
-        val customException: CustomException,
-    ) : ManageCategoryUIState
-
-    fun isSuccess(): Boolean = this is Success
-    fun isError(): Boolean = this is Error
-    fun getSuccessCategoryList(): List<CategoryUIModel>? =
-        if (this is Success) categoryList else null
-
-    fun getErrorCustomException(): CustomException? = if (this is Error) customException else null
-}
-
-sealed interface ManageCategoryUIEvent : FragmentUIEvent {
-    object NavigateAddCategory : ManageCategoryUIEvent
-    data class OnCategorySelected(
-        val category: CategoryUIModel,
-    ) : ManageCategoryUIEvent
-
-    data class OnCategoryDeleted(
-        val category: CategoryUIModel,
-    ) : ManageCategoryUIEvent
-
-    data class RefreshCategoryListElement(val position: Int) : ManageCategoryUIEvent
-
-    object Loading : ManageCategoryUIEvent
 }

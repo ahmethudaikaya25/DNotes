@@ -133,7 +133,10 @@ fun CategoryBottomSheetScreen(
 
                 OutlinedTextField(
                     value = nameText,
-                    onValueChange = { nameText = it },
+                    onValueChange = {
+                        nameText = it
+                        viewModel.onNameChanged(it)
+                    },
                     label = { Text("Category Name") },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
@@ -148,7 +151,10 @@ fun CategoryBottomSheetScreen(
 
             OutlinedTextField(
                 value = descriptionText,
-                onValueChange = { descriptionText = it },
+                onValueChange = {
+                    descriptionText = it
+                    viewModel.onDescriptionChanged(it)
+                },
                 label = { Text("Category Description") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,

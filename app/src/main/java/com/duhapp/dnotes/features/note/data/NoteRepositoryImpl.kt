@@ -2,6 +2,7 @@ package com.duhapp.dnotes.features.note.data
 
 import com.duhapp.dnotes.R
 import com.duhapp.dnotes.app.database.NoteDao
+import com.duhapp.dnotes.features.add_or_update_category.data.CategoryRepository
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.features.base.data.BaseRepository
 import com.duhapp.dnotes.features.base.domain.CustomException
@@ -13,6 +14,7 @@ import timber.log.Timber
 
 class NoteRepositoryImpl(
     private val noteDao: NoteDao,
+    private val categoryRepository: CategoryRepository,
     dispatchers: CoroutineDispatcher,
 ) : NoteRepository, BaseRepository(dispatchers) {
 
@@ -79,6 +81,17 @@ class NoteRepositoryImpl(
                 )
             }
         }
+
+    override suspend fun getNoteById(id: Int): BaseNoteUIModel? = runOnIO {
+        try {
+            val noteEntity = noteDao.getNoteById(id) ?: return@runOnIO null
+            val category = categoryRepository.getById(noteEntity.categoryId) ?: CategoryUIModel()
+            noteEntity.toUIModel(category)
+        } catch (e: Exception) {
+            Timber.e(e)
+            null
+        }
+    }
 
     override suspend fun deleteNotes(notes: List<BaseNoteUIModel>) = runOnIO {
         try {

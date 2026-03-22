@@ -19,17 +19,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             DNotesTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    MainScreen(
-                        onNavigateToNote = {
-                            // TODO: Navigate to note
-                        },
-                        onNavigateToAllNotes = { categoryId ->
-                            // TODO: Navigate to all notes
-                        },
-                        onNavigateToCategoryBottomSheet = {
-                            // TODO: Show category bottom sheet
-                        }
-                    )
+                    MainScreen()
                 }
             }
         }
