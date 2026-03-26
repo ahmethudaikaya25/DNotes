@@ -1,12 +1,15 @@
 package com.duhapp.dnotes.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -14,7 +17,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +53,7 @@ import com.duhapp.dnotes.features.home.ui.HomeScreen
 import com.duhapp.dnotes.features.home.ui.HomeScreenEffect
 import com.duhapp.dnotes.features.home.ui.HomeScreenIntent
 import com.duhapp.dnotes.features.home.ui.HomeViewModel
+import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreen
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenEffect
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryViewModel
@@ -55,6 +61,7 @@ import com.duhapp.dnotes.features.note.ui.NoteScreen
 import com.duhapp.dnotes.features.note.ui.NoteScreenEffect
 import com.duhapp.dnotes.features.note.ui.NoteScreenIntent
 import com.duhapp.dnotes.features.note.ui.NoteViewModel
+import com.duhapp.dnotes.features.note.ui.getDarkColorFromOrdinal
 import com.duhapp.dnotes.ui.navigation.Screen
 import com.duhapp.dnotes.ui.theme.BottomNavBar
 import com.duhapp.dnotes.ui.theme.BottomNavBarUnselected
@@ -98,6 +105,10 @@ fun MainScreen(
     var showCategoryBottomSheet by rememberSaveable { mutableStateOf(false) }
     var bottomSheetCategory by rememberSaveable { mutableStateOf(CategoryUIModel()) }
     var bottomSheetShowType by rememberSaveable { mutableStateOf(CategoryShowType.Add) }
+    var showMoveDialog by remember { mutableStateOf(false) }
+    var noteToMove by remember { mutableStateOf<BaseNoteUIModel?>(null) }
+    var selectedMoveCategory by remember { mutableStateOf<CategoryUIModel?>(null) }
+    var activeAllNotesViewModel by remember { mutableStateOf<AllNotesViewModel?>(null) }
 
     val bottomNavItems = listOf(
         BottomNavItem(
@@ -289,6 +300,15 @@ fun MainScreen(
                     val allNotesViewModel: AllNotesViewModel = hiltViewModel()
                     val state by allNotesViewModel.state.collectAsState()
 
+                    DisposableEffect(allNotesViewModel) {
+                        activeAllNotesViewModel = allNotesViewModel
+                        onDispose {
+                            if (activeAllNotesViewModel == allNotesViewModel) {
+                                activeAllNotesViewModel = null
+                            }
+                        }
+                    }
+
                     LaunchedEffect(categoryId) {
                         allNotesViewModel.processIntent(AllNotesScreenIntent.LoadNotes(categoryId))
                     }
@@ -302,7 +322,16 @@ fun MainScreen(
                                 is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.NavigateBack -> {
                                     navController.popBackStack()
                                 }
-                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.ShowMoveDialog -> {}
+                                is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.ShowMoveDialog -> {
+                                    noteToMove = effect.note
+                                    selectedMoveCategory = mainViewModel.categories.firstOrNull { category ->
+                                        category.id == effect.note.category.id
+                                    } ?: mainViewModel.categories.firstOrNull()
+                                    showMoveDialog = true
+                                    if (mainViewModel.categories.isEmpty()) {
+                                        mainViewModel.loadCategories()
+                                    }
+                                }
                                 is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.NotesDeleted -> {}
                                 is com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenEffect.ShowError -> {}
                             }
@@ -329,6 +358,71 @@ fun MainScreen(
             },
             onDismiss = {
                 showCategoryBottomSheet = false
+            }
+        )
+    }
+
+    if (showMoveDialog) {
+        val categories = mainViewModel.categories
+        AlertDialog(
+            onDismissRequest = {
+                showMoveDialog = false
+                noteToMove = null
+                selectedMoveCategory = null
+            },
+            title = {
+                Text("Move note to category")
+            },
+            text = {
+                if (categories.isEmpty()) {
+                    Text("No categories available.")
+                } else {
+                    Column {
+                        categories.forEach { category ->
+                            val isSelected = category.id == selectedMoveCategory?.id
+                            TextButton(
+                                onClick = { selectedMoveCategory = category }
+                            ) {
+                                Text(
+                                    text = "${category.emoji} ${category.name}",
+                                    color = if (isSelected) {
+                                        getDarkColorFromOrdinal(category.color.color.ordinal)
+                                    } else {
+                                        Color.Black
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val note = noteToMove
+                        val category = selectedMoveCategory
+                        if (note != null && category != null) {
+                            activeAllNotesViewModel?.moveNotesToCategory(listOf(note), category)
+                        }
+                        showMoveDialog = false
+                        noteToMove = null
+                        selectedMoveCategory = null
+                    },
+                    enabled = noteToMove != null && selectedMoveCategory != null
+                ) {
+                    Text("Move")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showMoveDialog = false
+                        noteToMove = null
+                        selectedMoveCategory = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
             }
         )
     }
