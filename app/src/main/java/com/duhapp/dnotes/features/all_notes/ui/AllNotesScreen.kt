@@ -1,5 +1,6 @@
 package com.duhapp.dnotes.features.all_notes.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
@@ -42,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BasicNoteUIModel
 import com.duhapp.dnotes.ui.theme.BackgroundColor
 import com.duhapp.dnotes.ui.theme.PrimaryColor
@@ -165,6 +165,7 @@ fun AllNotesScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AllNotesNoteItem(
     note: BasicNoteUIModel,
