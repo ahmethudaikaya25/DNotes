@@ -34,6 +34,10 @@ import com.duhapp.dnotes.features.home.home_screen_category.ui.HomeCategoryUIMod
 import com.duhapp.dnotes.ui.theme.BackgroundColor
 import com.duhapp.dnotes.ui.theme.PrimaryColor
 
+private val HomeNoteCardWidth = 180.dp
+private val HomeNoteCardHeight = 252.dp
+private val HomeCategorySpacing = 16.dp
+
 @Composable
 fun HomeScreen(
     state: HomeScreenState,
@@ -149,9 +153,12 @@ fun HomeCategorySection(
         LazyRow(
             modifier = Modifier.fillMaxWidth(),
             contentPadding = PaddingValues(top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(HomeCategorySpacing)
         ) {
-            items(category.noteList) { note ->
+            items(
+                items = category.noteList,
+                key = { note -> note.id }
+            ) { note ->
                 if (note is BasicNoteUIModel) {
                     NoteListItem(
                         note = note,
@@ -174,8 +181,8 @@ fun NoteListItem(
 
     Card(
         modifier = modifier
-            .width(180.dp)
-            .height(252.dp)
+            .width(HomeNoteCardWidth)
+            .height(HomeNoteCardHeight)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
