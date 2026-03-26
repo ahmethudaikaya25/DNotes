@@ -94,6 +94,7 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val categoryBottomSheetViewModel: CategoryBottomSheetViewModel = hiltViewModel()
+    val manageCategoryViewModel: ManageCategoryViewModel = hiltViewModel()
 
     var showCategoryBottomSheet by rememberSaveable { mutableStateOf(false) }
     var bottomSheetCategory by rememberSaveable { mutableStateOf(CategoryUIModel()) }
@@ -215,7 +216,6 @@ fun MainScreen(
                     )
                 }
                 composable(Screen.ManageCategory.route) {
-                    val manageCategoryViewModel: ManageCategoryViewModel = hiltViewModel()
                     val state by manageCategoryViewModel.state.collectAsState()
 
                     LaunchedEffect(Unit) {
@@ -326,6 +326,7 @@ fun MainScreen(
             onSave = { savedCategory ->
                 showCategoryBottomSheet = false
                 mainViewModel.loadCategories()
+                manageCategoryViewModel.onCategoryUpserted()
             },
             onDismiss = {
                 showCategoryBottomSheet = false
