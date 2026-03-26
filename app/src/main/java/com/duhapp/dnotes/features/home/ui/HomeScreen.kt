@@ -149,15 +149,15 @@ fun HomeCategorySection(
             )
         }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(top = 12.dp),
-            verticalAlignment = Alignment.Top,
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(top = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(HomeCategorySpacing)
         ) {
-            category.noteList.forEach { note ->
+            items(
+                items = category.noteList,
+                key = { note -> note.id }
+            ) { note ->
                 if (note is BasicNoteUIModel) {
                     NoteListItem(
                         note = note,
