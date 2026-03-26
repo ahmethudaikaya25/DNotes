@@ -54,6 +54,7 @@ import com.duhapp.dnotes.features.home.ui.HomeScreenEffect
 import com.duhapp.dnotes.features.home.ui.HomeScreenIntent
 import com.duhapp.dnotes.features.home.ui.HomeViewModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
+import com.duhapp.dnotes.features.manage_category.domain.CreateDefaultCategory
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreen
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenEffect
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryViewModel
@@ -79,7 +80,8 @@ data class BottomNavItem(
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val getCategories: GetCategories
+    private val getCategories: GetCategories,
+    private val createDefaultCategory: CreateDefaultCategory
 ) : ViewModel() {
     var categories by mutableStateOf<List<CategoryUIModel>>(emptyList())
         private set
@@ -90,6 +92,7 @@ class MainViewModel @Inject constructor(
 
     fun loadCategories() {
         viewModelScope.launch {
+            createDefaultCategory.invoke()
             categories = getCategories.invoke()
         }
     }
