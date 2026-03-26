@@ -239,9 +239,6 @@ fun MainScreen(
                         onIntent = { intent -> manageCategoryViewModel.processIntent(intent) }
                     )
                 }
-                composable(Screen.Notifications.route) {
-                    // NotificationsScreen removed for now
-                }
                 composable(
                     route = Screen.Note.route,
                     arguments = listOf(
