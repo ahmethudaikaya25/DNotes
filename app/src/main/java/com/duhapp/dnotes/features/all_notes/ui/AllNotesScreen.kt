@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +48,10 @@ import androidx.compose.ui.unit.sp
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BasicNoteUIModel
 import com.duhapp.dnotes.ui.theme.BackgroundColor
 import com.duhapp.dnotes.ui.theme.PrimaryColor
+
+private val AllNotesCardWidth = 180.dp
+private val AllNotesCardMaxHeight = 252.dp
+private val AllNotesGridSpacing = 16.dp
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -129,34 +135,42 @@ fun AllNotesScreen(
                         Text("No notes found")
                     }
                 } else {
-                    FlowRow(
+                    BoxWithConstraints(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                            .padding(16.dp)
                     ) {
-                        state.notes.filterIsInstance<BasicNoteUIModel>().forEach { note ->
-                            AllNotesNoteItem(
-                                note = note,
-                                isSelectable = state.isSelectable,
-                                isSelected = state.selectedNoteIds.contains(note.id),
-                                onClick = {
-                                    onIntent(AllNotesScreenIntent.NoteClicked(note))
-                                },
-                                onLongClick = {
-                                    onIntent(AllNotesScreenIntent.NoteLongClicked(note))
-                                },
-                                onEdit = {
-                                    onIntent(AllNotesScreenIntent.NoteClicked(note))
-                                },
-                                onDelete = {
-                                    onIntent(AllNotesScreenIntent.DeleteNote(note))
-                                },
-                                onMove = {
-                                    onIntent(AllNotesScreenIntent.MoveNote(note))
-                                }
-                            )
+                        val maxItemsInRow = ((maxWidth + AllNotesGridSpacing) / (AllNotesCardWidth + AllNotesGridSpacing))
+                            .toInt()
+                            .coerceAtLeast(1)
+
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(AllNotesGridSpacing),
+                            verticalArrangement = Arrangement.spacedBy(AllNotesGridSpacing),
+                            maxItemsInEachRow = maxItemsInRow
+                        ) {
+                            state.notes.filterIsInstance<BasicNoteUIModel>().forEach { note ->
+                                AllNotesNoteItem(
+                                    note = note,
+                                    isSelectable = state.isSelectable,
+                                    isSelected = state.selectedNoteIds.contains(note.id),
+                                    onClick = {
+                                        onIntent(AllNotesScreenIntent.NoteClicked(note))
+                                    },
+                                    onLongClick = {
+                                        onIntent(AllNotesScreenIntent.NoteLongClicked(note))
+                                    },
+                                    onEdit = {
+                                        onIntent(AllNotesScreenIntent.NoteClicked(note))
+                                    },
+                                    onDelete = {
+                                        onIntent(AllNotesScreenIntent.DeleteNote(note))
+                                    },
+                                    onMove = {
+                                        onIntent(AllNotesScreenIntent.MoveNote(note))
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -184,7 +198,8 @@ fun AllNotesNoteItem(
 
     Card(
         modifier = modifier
-            .width(180.dp)
+            .width(AllNotesCardWidth)
+            .heightIn(max = AllNotesCardMaxHeight)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

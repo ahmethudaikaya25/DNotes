@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -36,7 +37,7 @@ import com.duhapp.dnotes.ui.theme.BackgroundColor
 import com.duhapp.dnotes.ui.theme.PrimaryColor
 
 private val HomeNoteCardWidth = 180.dp
-private val HomeNoteCardHeight = 252.dp
+private val HomeNoteCardMaxHeight = 252.dp
 private val HomeCategorySpacing = 16.dp
 
 @Composable
@@ -183,7 +184,7 @@ fun NoteListItem(
     Card(
         modifier = modifier
             .width(HomeNoteCardWidth)
-            .height(HomeNoteCardHeight)
+            .heightIn(max = HomeNoteCardMaxHeight)
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
