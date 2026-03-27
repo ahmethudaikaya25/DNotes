@@ -79,7 +79,7 @@
 
 ### Story 1.1 — NoteCard Composable
 **Commits:**
-- [ ] `feat: add NoteCard composable with color gradient, title, body preview`
+- [x] `feat: add NoteCard composable with color gradient, title, body preview`
 - [ ] `feat: add selection state animation to NoteCard`
 - [ ] `feat: add pin indicator badge to NoteCard`
 
