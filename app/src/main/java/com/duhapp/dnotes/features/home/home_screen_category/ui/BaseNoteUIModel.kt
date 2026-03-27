@@ -53,6 +53,7 @@ open class BaseNoteUIModel(
             title = title,
             details = body,
             categoryId = category.id,
+            isPinned = isPinned
         )
     }
 
@@ -148,6 +149,7 @@ class BasicNoteUIModel(
         title = title,
         details = body,
         categoryId = category.id,
+        isPinned = isPinned
     )
 
     override fun newCopy(): BasicNoteUIModel {
@@ -190,6 +192,7 @@ class ImageNoteUIModel(
         title = title,
         details = body,
         categoryId = category.id,
+        isPinned = isPinned
     )
 
     override fun newCopy(): ImageNoteUIModel {

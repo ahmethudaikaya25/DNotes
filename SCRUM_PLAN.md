@@ -217,19 +217,19 @@
 
 **Goal:** Room migrations applied, DataStore integrated for preferences.
 
-### Story 6.1 — Room Migrations
+### Story 6.1 — Room Migrations ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add Room migration 1→2 (index + foreign key enforcement)`
-- [ ] `feat: add Room migration 2→3 (is_pinned, created_at, updated_at fields)`
-- [ ] `feat: add Room migration 3→4 (category sort_order field)`
-- [ ] `feat: update AppDatabase to version 4 with all migrations`
+- [x] `feat: add Room migration 1→2 (index + foreign key enforcement)`
+- [x] `feat: add Room migration 2→3 (is_pinned, created_at, updated_at fields)`
+- [x] `feat: add Room migration 3→4 (category sort_order field)`
+- [x] `feat: update AppDatabase to version 4 with all migrations`
 
-### Story 6.2 — DataStore Preferences
+### Story 6.2 — DataStore Preferences ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add UserPreferences DataStore with dark mode, sort, group-by keys`
-- [ ] `feat: add UserPreferencesRepository`
-- [ ] `feat: wire sort/group-by selections to DataStore in HomeViewModel`
-- [ ] `feat: inject DataStore into Hilt module`
+- [x] `feat: add UserPreferences DataStore with dark mode, sort, group-by keys`
+- [x] `feat: add UserPreferencesRepository`
+- [x] `feat: wire sort/group-by selections to DataStore in HomeViewModel`
+- [x] `feat: inject DataStore into Hilt module`
 
 ---
 
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ---
 
-> ✅ **Sprint 5 — MANAGE CATEGORY COMPLETE**
-> 🟡 **Sprint 6, Story 6.1 — Room Migrations — Next**
+> ✅ **Sprint 6 — STORAGE UPGRADE COMPLETE**
+> 🟡 **Sprint 7, Story 7.1 — Global Note Search — Next**
