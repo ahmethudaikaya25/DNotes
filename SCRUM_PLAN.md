@@ -77,11 +77,11 @@
 
 **Goal:** All reusable UI building blocks are ready before any screen is migrated.
 
-### Story 1.1 — NoteCard Composable
+### Story 1.1 — NoteCard Composable ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add NoteCard composable with color gradient, title, body preview`
-- [ ] `feat: add selection state animation to NoteCard`
-- [ ] `feat: add pin indicator badge to NoteCard`
+- [x] `feat: add selection state animation to NoteCard`
+- [x] `feat: add pin indicator badge to NoteCard`
 
 ### Story 1.2 — Category Components
 **Commits:**
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 0 — COMPLETE** (4 stories, 4 commits)
-> 🟡 **Sprint 1, Story 1.1 — NoteCard Composable — Next**
+> ✅ **Sprint 1, Story 1.1 — COMPLETE**
+> 🟡 **Sprint 1, Story 1.2 — Category Components — Next**
