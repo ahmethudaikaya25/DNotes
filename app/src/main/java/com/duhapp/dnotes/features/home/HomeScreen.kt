@@ -15,10 +15,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.duhapp.dnotes.R
 import com.duhapp.dnotes.foundation.mvi.MviScreen
-import com.duhapp.dnotes.foundation.navigation.Route
+import com.duhapp.dnotes.foundation.theme.toComposeColors
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import com.duhapp.dnotes.features.home.components.SortByToolbar
+import com.duhapp.dnotes.foundation.navigation.Route
 
 @Composable
 fun HomeScreenRoute(
@@ -112,12 +116,18 @@ private fun HomeContent(
         }
         else -> {
             if (state.groupBy == GroupBy.NONE) {
-                // Flat note list
-                com.duhapp.dnotes.features.home.components.NoteList(
-                    notes = state.notes,
-                    onNoteClick = { noteId -> onIntent(HomeIntent.OnNoteClicked(noteId)) },
-                    modifier = modifier
-                )
+                // Flat note list with Sort Toolbar
+                Column(modifier = modifier.fillMaxSize()) {
+                    SortByToolbar(
+                        currentSort = state.sortBy,
+                        onSortChanged = { sortBy -> onIntent(HomeIntent.OnSortByChanged(sortBy)) }
+                    )
+                    com.duhapp.dnotes.features.home.components.NoteList(
+                        notes = state.notes,
+                        onNoteClick = { noteId -> onIntent(HomeIntent.OnNoteClicked(noteId)) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             } else {
                 // Grouped by Category (Story 2.3)
                 // TODO: Render Categories list

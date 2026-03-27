@@ -119,7 +119,7 @@
 ### Story 2.2 — Note List (Flat, Sorted)
 **Commits:**
 - [x] `feat: add flat note list with NoteCard in HomeScreen`
-- [ ] `feat: add sort-by toolbar (chips: Date ↕, Modified, Title, Color)`
+- [x] `feat: add sort-by toolbar (chips: Date ↕, Modified, Title, Color)`
 - [ ] `feat: persist sort selection in DataStore`
 
 ### Story 2.3 — Group By Feature
