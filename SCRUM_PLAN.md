@@ -97,7 +97,7 @@
 
 ### Story 1.4 — Feedback & State Components
 **Commits:**
-- [ ] `feat: add LoadingScreen composable`
+- [x] `feat: add LoadingScreen composable`
 - [ ] `feat: add EmptyStateView composable with illustration`
 - [ ] `feat: add ConfirmDialog and InfoDialog composables`
 - [ ] `feat: add BaseModalSheet composable wrapper`
