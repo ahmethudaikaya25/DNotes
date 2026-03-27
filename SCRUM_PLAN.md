@@ -89,11 +89,11 @@
 - [x] `feat: add ColorSelectorRow composable for category color picker`
 - [x] `feat: add EmojiPickerField composable`
 
-### Story 1.3 — Scaffold & Navigation Components
+### Story 1.3 — Scaffold & Navigation Components ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add DNotesTopBar composable with back button + actions`
 - [x] `feat: add DNotesBottomNavigation composable`
-- [ ] `feat: add BaseScreenScaffold composable wrapper`
+- [x] `feat: add BaseScreenScaffold composable wrapper`
 
 ### Story 1.4 — Feedback & State Components
 **Commits:**
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 1, Story 1.2 — COMPLETE**
-> 🟡 **Sprint 1, Story 1.3 — Scaffold & Navigation Components — Next**
+> ✅ **Sprint 1, Story 1.3 — COMPLETE**
+> 🟡 **Sprint 1, Story 1.4 — Feedback & State Components — Next**
