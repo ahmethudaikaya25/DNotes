@@ -138,7 +138,12 @@ private fun HomeContent(
                     )
                 } else {
                     // Grouped by Category (Story 2.3)
-                    // TODO: Render Categories list
+                    com.duhapp.dnotes.features.home.components.GroupedNoteList(
+                        categories = state.categories,
+                        onNoteClick = { noteId -> onIntent(HomeIntent.OnNoteClicked(noteId)) },
+                        onViewAllClick = { categoryId -> onIntent(HomeIntent.OnCategoryViewAllClicked(categoryId)) },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
         }

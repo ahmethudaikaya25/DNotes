@@ -122,12 +122,12 @@
 - [x] `feat: add sort-by toolbar (chips: Date ↕, Modified, Title, Color)`
 - [x] `feat: persist sort selection in DataStore`
 
-### Story 2.3 — Group By Feature
+### Story 2.3 — Group By Feature ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add group-by toolbar option (Category, Date, Color, Pinned)`
-- [ ] `feat: add grouped list rendering with section headers`
-- [ ] `feat: add "View All" action in category group header`
-- [ ] `feat: persist group-by selection in DataStore`
+- [x] `feat: add grouped list rendering with section headers`
+- [x] `feat: add "View All" action in category group header`
+- [x] `feat: persist group-by selection in DataStore`
 
 ### Story 2.4 — Wire Home Navigation
 **Commits:**
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 2, Story 2.2 — COMPLETE**
-> 🟡 **Sprint 2, Story 2.3 — Group By Feature — Next**
+> ✅ **Sprint 2, Story 2.3 — COMPLETE**
+> 🟡 **Sprint 2, Story 2.4 — Wire Home Navigation — Next**
