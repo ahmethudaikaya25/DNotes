@@ -252,25 +252,27 @@
 
 **Goal:** Settings screen, full export/import with AES-256-GCM encryption.
 
-### Story 8.1 — Settings Screen
+### Story 8.1 — Settings Screen ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add SettingsScreen composable`
-- [ ] `feat: add dark mode toggle wired to DataStore`
-- [ ] `feat: add settings gear icon to HomeScreen top bar`
+- [x] `feat: add SettingsScreen composable`
+- [x] `feat: add dark mode toggle wired to DataStore`
+- [x] `feat: add settings gear icon to HomeScreen top bar`
 
-### Story 8.2 — Export Feature
+### Story 8.2 — Export Feature ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add NoteExporter — serializes DB to JSON`
-- [ ] `feat: add ExportEncryption — AES-256-GCM with PBKDF2 key derivation`
-- [ ] `feat: add ExportScreen composable (password toggle + file picker)`
-- [ ] `feat: add ExportUseCase + wire to ExportScreen`
+- [x] `feat: add NoteExporter — serializes DB to JSON`
+- [x] `feat: add ExportEncryption — AES-256-GCM with PBKDF2 key derivation`
+- [x] `feat: add ExportScreen composable (password toggle + file picker)`
+- [x] `feat: add ExportUseCase + wire to ExportScreen`
 
-### Story 8.3 — Import Feature
+### Story 8.3 — Import Feature ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add NoteImporter — parses JSON and inserts with merge strategy`
-- [ ] `feat: add ImportScreen composable (file picker + strategy selector)`
-- [ ] `feat: add ImportUseCase + wire to ImportScreen`
-- [ ] `feat: add import conflict resolution dialog`
+- [x] `feat: add NoteImporter — parses JSON and inserts with merge strategy`
+- [x] `feat: add ImportScreen composable (file picker + strategy selector)`
+- [x] `feat: add ImportUseCase + wire to ImportScreen`
+- [x] `feat: add import conflict resolution dialog`
+- [x] `feat: wire ImportScreen to NoteExporter/Encryption`
+- [x] `feat: add conflict resolution (map to existing categories)`
 
 ---
 
@@ -318,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ---
 
-> ✅ **Sprint 7 — SEARCH SCREEN COMPLETE**
-> 🟡 **Sprint 8, Story 8.1 — Settings Screen — Next**
+> ✅ **DNotes Compose Migration — COMPLETE**
+> 🎉 All features refactored to MVI + Compose + Material 3.

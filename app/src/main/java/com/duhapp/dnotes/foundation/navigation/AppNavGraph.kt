@@ -11,6 +11,9 @@ import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenRoute
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenRoute
 import com.duhapp.dnotes.features.note.ui.NoteEditorScreenRoute
 import com.duhapp.dnotes.features.search.ui.SearchScreenRoute
+import com.duhapp.dnotes.features.settings.ui.ExportScreenRoute
+import com.duhapp.dnotes.features.settings.ui.ImportScreenRoute
+import com.duhapp.dnotes.features.settings.ui.SettingsScreenRoute
 
 /**
  * Root navigation graph for the DNotes Compose UI.
@@ -97,17 +100,25 @@ fun AppNavGraph(
 
         // ── Settings ──────────────────────────────────────────────────────────
         composable<Route.Settings> {
-            // TODO(Sprint 8): SettingsScreenRoute(navController)
+            SettingsScreenRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToExport = { navController.navigate(Route.ExportNotes) },
+                onNavigateToImport = { navController.navigate(Route.ImportNotes) }
+            )
         }
 
         // ── Export ────────────────────────────────────────────────────────────
         composable<Route.ExportNotes> {
-            // TODO(Sprint 8): ExportScreenRoute(navController)
+            ExportScreenRoute(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
 
         // ── Import ────────────────────────────────────────────────────────────
         composable<Route.ImportNotes> {
-            // TODO(Sprint 8): ImportScreenRoute(navController)
+            ImportScreenRoute(
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
     }
 }
