@@ -170,23 +170,23 @@
 
 **Goal:** All Notes screen migrated with staggered grid and selection mode.
 
-### Story 4.1 — AllNotes ViewModel & Scaffold
+### Story 4.1 — AllNotes ViewModel & Scaffold ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add AllNotesIntent, AllNotesState, AllNotesEffect`
-- [ ] `refactor: rewrite AllNotesViewModel to extend MviViewModel`
-- [ ] `feat: add AllNotesScreen composable scaffold`
+- [x] `feat: add AllNotesIntent, AllNotesState, AllNotesEffect`
+- [x] `refactor: rewrite AllNotesViewModel to extend MviViewModel`
+- [x] `feat: add AllNotesScreen composable scaffold`
 
-### Story 4.2 — Staggered Grid Layout
+### Story 4.2 — Staggered Grid Layout ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add staggered 2-column grid with NoteCard in AllNotesScreen`
+- [x] `feat: add staggered 2-column grid with NoteCard in AllNotesScreen`
 - [ ] `feat: add sort chips row to AllNotesScreen`
 
 ### Story 4.3 — Selection Mode
 **Commits:**
-- [ ] `feat: add multi-select mode to AllNotesScreen`
-- [ ] `feat: add contextual action bar (Delete Selected, Move Selected)`
+- [x] `feat: add multi-select mode to AllNotesScreen`
+- [x] `feat: add contextual action bar (Delete Selected, Move Selected)`
 - [ ] `feat: add move-to-category ModalBottomSheet in AllNotesScreen`
-- [ ] `feat: replace AllNotesFragment with AllNotesScreen in nav graph`
+- [x] `feat: replace AllNotesFragment with AllNotesScreen in nav graph`
 
 ---
 
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 3 — COMPLETE**
-> 🟡 **Sprint 4, Story 4.1 — All Notes Screen Layout — Next**
+> ✅ **Sprint 4 — Story 4.1 & 4.2 COMPLETE**
+> 🟡 **Sprint 4, Story 4.3 — Selection Mode & Category Move Sheet — Next**

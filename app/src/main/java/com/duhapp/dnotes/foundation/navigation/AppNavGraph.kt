@@ -5,7 +5,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.duhapp.dnotes.features.home.HomeScreenRoute
+import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenRoute
+import com.duhapp.dnotes.features.note.ui.NoteEditorScreenRoute
 
 /**
  * Root navigation graph for the DNotes Compose UI.
@@ -42,13 +45,28 @@ fun AppNavGraph(
         }
 
         // ── Note Editor ───────────────────────────────────────────────────────
-        composable<Route.NoteEditor> {
-            // TODO(Sprint 3): NoteEditorScreenRoute(navController)
+        composable<Route.NoteEditor> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.NoteEditor>()
+            NoteEditorScreenRoute(
+                noteId = route.noteId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // ── All Notes ─────────────────────────────────────────────────────────
-        composable<Route.AllNotes> {
-            // TODO(Sprint 4): AllNotesScreenRoute(navController)
+        composable<Route.AllNotes> { backStackEntry ->
+            val route = backStackEntry.toRoute<Route.AllNotes>()
+            AllNotesScreenRoute(
+                categoryId = route.categoryId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToNote = { noteId ->
+                    navController.navigate(Route.NoteEditor(noteId))
+                }
+            )
         }
 
         // ── Manage Category ───────────────────────────────────────────────────
