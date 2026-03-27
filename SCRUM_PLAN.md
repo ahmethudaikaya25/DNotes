@@ -116,11 +116,11 @@
 - [x] `feat(home): add grouping and sorting properties to state`
 - [x] `feat: add HomeScreen composable scaffold with top bar`
 
-### Story 2.2 — Note List (Flat, Sorted)
+### Story 2.2 — Note List (Flat, Sorted) ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add flat note list with NoteCard in HomeScreen`
 - [x] `feat: add sort-by toolbar (chips: Date ↕, Modified, Title, Color)`
-- [ ] `feat: persist sort selection in DataStore`
+- [x] `feat: persist sort selection in DataStore`
 
 ### Story 2.3 — Group By Feature
 **Commits:**
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 2, Story 2.1 — COMPLETE**
-> 🟡 **Sprint 2, Story 2.2 — Note List (Flat, Sorted) — Next**
+> ✅ **Sprint 2, Story 2.2 — COMPLETE**
+> 🟡 **Sprint 2, Story 2.3 — Group By Feature — Next**
