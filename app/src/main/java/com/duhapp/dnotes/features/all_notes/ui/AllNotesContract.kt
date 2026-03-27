@@ -11,6 +11,8 @@ data class AllNotesState(
     val category: CategoryUIModel? = null,
     val notes: List<BaseNoteUIModel> = emptyList(),
     val isSelectionMode: Boolean = false,
+    val isMoveSheetVisible: Boolean = false,
+    val availableCategories: List<CategoryUIModel> = emptyList(),
     val errorMessage: String? = null
 ) : UiState
 
@@ -20,7 +22,9 @@ sealed interface AllNotesIntent : UiIntent {
     data class OnNoteLongClick(val note: BaseNoteUIModel) : AllNotesIntent
     object CancelSelectionMode : AllNotesIntent
     object DeleteSelectedNotes : AllNotesIntent
-    object MoveSelectedNotes : AllNotesIntent // To open move-sheet
+    object MoveSelectedNotes : AllNotesIntent
+    data class OnCategorySelected(val category: CategoryUIModel) : AllNotesIntent
+    data class ToggleMoveSheet(val isVisible: Boolean) : AllNotesIntent
     object GoBack : AllNotesIntent
 }
 

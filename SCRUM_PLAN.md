@@ -181,11 +181,11 @@
 - [x] `feat: add staggered 2-column grid with NoteCard in AllNotesScreen`
 - [ ] `feat: add sort chips row to AllNotesScreen`
 
-### Story 4.3 — Selection Mode
+### Story 4.3 — Selection Mode ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add multi-select mode to AllNotesScreen`
 - [x] `feat: add contextual action bar (Delete Selected, Move Selected)`
-- [ ] `feat: add move-to-category ModalBottomSheet in AllNotesScreen`
+- [x] `feat: add move-to-category ModalBottomSheet in AllNotesScreen`
 - [x] `feat: replace AllNotesFragment with AllNotesScreen in nav graph`
 
 ---
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 4 — Story 4.1 & 4.2 COMPLETE**
-> 🟡 **Sprint 4, Story 4.3 — Selection Mode & Category Move Sheet — Next**
+> ✅ **Sprint 4 — ALL NOTES SCREEN COMPLETE**
+> 🟡 **Sprint 5, Story 5.1 — Manage Category Screen Layout — Next**

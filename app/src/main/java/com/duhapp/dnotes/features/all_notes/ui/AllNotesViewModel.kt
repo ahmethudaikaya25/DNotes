@@ -1,7 +1,10 @@
 package com.duhapp.dnotes.features.all_notes.ui
 
 import androidx.lifecycle.viewModelScope
+import com.duhapp.dnotes.app.database.CategoryDao
+import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
 import com.duhapp.dnotes.features.all_notes.domain.DeleteNote
 import com.duhapp.dnotes.features.all_notes.domain.GetNotesByCategoryId
 import com.duhapp.dnotes.features.all_notes.domain.UpdateNotes
@@ -17,6 +20,7 @@ class AllNotesViewModel @Inject constructor(
     private val getNotesByCategoryId: GetNotesByCategoryId,
     private val deleteNote: DeleteNote,
     private val updateNotes: UpdateNotes,
+    private val categoryDao: CategoryDao,
     private val defaultCategoryModel: CategoryUIModel
 ) : MviViewModel<AllNotesIntent, AllNotesState, AllNotesEffect>(AllNotesState()) {
 
@@ -27,7 +31,9 @@ class AllNotesViewModel @Inject constructor(
             is AllNotesIntent.OnNoteLongClick -> handleNoteLongClick(intent.note)
             is AllNotesIntent.CancelSelectionMode -> cancelSelectionMode()
             is AllNotesIntent.DeleteSelectedNotes -> deleteSelectedNotes()
-            is AllNotesIntent.MoveSelectedNotes -> moveSelectedNotes()
+            is AllNotesIntent.MoveSelectedNotes -> updateState { copy(isMoveSheetVisible = true) }
+            is AllNotesIntent.OnCategorySelected -> changeCategoryForSelectedNotes(intent.category)
+            is AllNotesIntent.ToggleMoveSheet -> updateState { copy(isMoveSheetVisible = intent.isVisible) }
             is AllNotesIntent.GoBack -> emitEffect(AllNotesEffect.NavigateBack)
         }
     }
@@ -36,6 +42,18 @@ class AllNotesViewModel @Inject constructor(
         updateState { copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             try {
+                // Fetch categories
+                val categoryEntities = categoryDao.getCategories()
+                val availableCategories = categoryEntities.map { entity ->
+                    CategoryUIModel(
+                        id = entity.id,
+                        name = entity.name,
+                        emoji = entity.message,
+                        description = entity.description,
+                        color = ColorItemUIModel(color = NoteColor.fromOrdinal(entity.color))
+                    )
+                }
+
                 val notesById = getNotesByCategoryId.invoke(categoryId)
                 val category = notesById.firstOrNull()?.category ?: defaultCategoryModel
                 
@@ -44,7 +62,8 @@ class AllNotesViewModel @Inject constructor(
                         isLoading = false,
                         category = category,
                         notes = notesById,
-                        isSelectionMode = false 
+                        isSelectionMode = false,
+                        availableCategories = availableCategories
                     )
                 }
             } catch (e: Exception) {
@@ -122,11 +141,26 @@ class AllNotesViewModel @Inject constructor(
         }
     }
 
-    private fun moveSelectedNotes() {
-        val selectedNoteIds = currentState.notes.filter { it.isSelected }.map { it.id }
-        if (selectedNoteIds.isEmpty()) return
-        
-        emitEffect(AllNotesEffect.ShowMoveCategorySheet(selectedNoteIds))
-        cancelSelectionMode()
+    private fun changeCategoryForSelectedNotes(category: CategoryUIModel) {
+        viewModelScope.launch {
+            try {
+                val selectedNotes = currentState.notes.filter { it.isSelected }
+                if (selectedNotes.isEmpty()) return@launch
+
+                selectedNotes.forEach {
+                    it.category = category
+                    it.color = category.color.color.ordinal
+                }
+                
+                updateNotes.invoke(selectedNotes)
+                
+                // Reset select mode and reload
+                updateState { copy(isMoveSheetVisible = false, isSelectionMode = false) }
+                loadNotes(currentState.category?.id ?: -1)
+            } catch (e: Exception) {
+                Timber.e(e)
+                emitEffect(AllNotesEffect.ShowToast("Could not move notes"))
+            }
+        }
     }
 }

@@ -26,9 +26,11 @@ import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.theme.toComposeColors
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
+import com.duhapp.dnotes.foundation.uicomponents.CategoryChip
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
 import com.duhapp.dnotes.foundation.uicomponents.NoteCard
+import com.duhapp.dnotes.foundation.uicomponents.SelectCategorySheet
 
 @Composable
 fun AllNotesScreenRoute(
@@ -49,7 +51,8 @@ fun AllNotesScreenRoute(
                 is AllNotesEffect.NavigateToNoteEditor -> onNavigateToNote(effect.noteId)
                 is AllNotesEffect.ShowToast -> { /* Handle Toast */ }
                 is AllNotesEffect.ShowMoveCategorySheet -> {
-                    // Handled in Story 4.3
+                    // This intent is now handled internally in ViewModel 
+                    // by toggling state for the sheet directly.
                 }
             }
         }
@@ -78,7 +81,7 @@ fun AllNotesScreen(
 
     BaseScreenScaffold(
         title = title,
-        showBackButton = !state.isSelectionMode, // Hide back button in select mode
+        showBackButton = !state.isSelectionMode,
         onBackClick = {
             if (state.isSelectionMode) {
                 onIntent(AllNotesIntent.CancelSelectionMode)
@@ -89,7 +92,7 @@ fun AllNotesScreen(
         topBarActions = {
             if (state.isSelectionMode) {
                 IconButton(onClick = { onIntent(AllNotesIntent.CancelSelectionMode) }) {
-                    Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel text")
+                    Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
                 }
                 IconButton(onClick = { onIntent(AllNotesIntent.MoveSelectedNotes) }) {
                     Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Move")
@@ -151,5 +154,12 @@ fun AllNotesScreen(
                 }
             }
         }
+
+        SelectCategorySheet(
+            isVisible = state.isMoveSheetVisible,
+            categories = state.availableCategories,
+            onCategorySelected = { onIntent(AllNotesIntent.OnCategorySelected(it)) },
+            onDismissRequest = { onIntent(AllNotesIntent.ToggleMoveSheet(false)) }
+        )
     }
 }

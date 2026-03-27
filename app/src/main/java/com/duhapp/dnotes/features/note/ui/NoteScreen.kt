@@ -43,6 +43,7 @@ import com.duhapp.dnotes.foundation.uicomponents.CategoryChip
 import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
+import com.duhapp.dnotes.foundation.uicomponents.SelectCategorySheet
 
 @Composable
 fun NoteEditorScreenRoute(
