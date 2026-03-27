@@ -83,11 +83,11 @@
 - [x] `feat: add selection state animation to NoteCard`
 - [x] `feat: add pin indicator badge to NoteCard`
 
-### Story 1.2 — Category Components
+### Story 1.2 — Category Components ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add CategoryChip composable (emoji + name + color)`
 - [x] `feat: add ColorSelectorRow composable for category color picker`
-- [ ] `feat: add EmojiPickerField composable`
+- [x] `feat: add EmojiPickerField composable`
 
 ### Story 1.3 — Scaffold & Navigation Components
 **Commits:**
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 1, Story 1.1 — COMPLETE**
-> 🟡 **Sprint 1, Story 1.2 — Category Components — Next**
+> ✅ **Sprint 1, Story 1.2 — COMPLETE**
+> 🟡 **Sprint 1, Story 1.3 — Scaffold & Navigation Components — Next**
