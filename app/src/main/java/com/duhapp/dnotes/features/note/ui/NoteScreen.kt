@@ -2,6 +2,7 @@ package com.duhapp.dnotes.features.note.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,9 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.duhapp.dnotes.NoteColor
+import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.theme.toComposeColors
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
+import com.duhapp.dnotes.foundation.uicomponents.CategoryChip
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
 
@@ -91,12 +94,21 @@ fun NoteScreen(
                     title = state.note.title,
                     body = state.note.body,
                     textColor = textColor,
+                    category = state.note.category,
                     onTitleChange = { onIntent(NoteIntent.UpdateTitle(it)) },
                     onBodyChange = { onIntent(NoteIntent.UpdateBody(it)) },
+                    onCategoryClick = { onIntent(NoteIntent.ToggleCategorySheet(true)) },
                     paddingValues = paddingValues
                 )
             }
         }
+        
+        SelectCategorySheet(
+            isVisible = state.isCategorySheetVisible,
+            categories = state.availableCategories,
+            onCategorySelected = { onIntent(NoteIntent.ChangeCategory(it)) },
+            onDismissRequest = { onIntent(NoteIntent.ToggleCategorySheet(false)) }
+        )
     }
 }
 
@@ -105,8 +117,10 @@ private fun NoteEditorContent(
     title: String,
     body: String,
     textColor: androidx.compose.ui.graphics.Color,
+    category: CategoryUIModel?,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
+    onCategoryClick: () -> Unit,
     paddingValues: PaddingValues
 ) {
     Column(
@@ -116,6 +130,17 @@ private fun NoteEditorContent(
             .padding(horizontal = 24.dp)
             .imePadding() // Adjust for keyboard
     ) {
+        // Category Chip (opens category sheet)
+        if (category != null) {
+            CategoryChip(
+                icon = category.emoji,
+                label = category.name,
+                modifier = Modifier
+                    .padding(top = 16.dp, bottom = 8.dp)
+                    .clickable { onCategoryClick() }
+            )
+        }
+
         // Title Input
         BasicTextField(
             value = title,

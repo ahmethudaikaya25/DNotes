@@ -1,7 +1,10 @@
 package com.duhapp.dnotes.features.note.ui
 
 import androidx.lifecycle.viewModelScope
+import com.duhapp.dnotes.app.database.CategoryDao
+import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.DEFAULT_NOTE_MODEL
 import com.duhapp.dnotes.features.note.domain.GetDefaultCategory
 import com.duhapp.dnotes.features.note.domain.GetNoteById
@@ -16,15 +19,17 @@ import javax.inject.Inject
 class NoteViewModel @Inject constructor(
     private val upsertNote: UpsertNote,
     private val getDefaultCategory: GetDefaultCategory,
-    private val getNoteById: GetNoteById
+    private val getNoteById: GetNoteById,
+    private val categoryDao: CategoryDao
 ) : MviViewModel<NoteIntent, NoteState, NoteEffect>(NoteState()) {
 
     override fun processIntent(intent: NoteIntent) {
         when (intent) {
-            is NoteIntent.LoadNote -> loadNote(intent.noteId)
+            is NoteIntent.LoadNote -> loadNoteAndCategories(intent.noteId)
             is NoteIntent.UpdateTitle -> updateTitle(intent.title)
             is NoteIntent.UpdateBody -> updateBody(intent.body)
             is NoteIntent.ChangeCategory -> changeCategory(intent.category)
+            is NoteIntent.ToggleCategorySheet -> updateState { copy(isCategorySheetVisible = intent.isVisible) }
             is NoteIntent.SaveNote -> saveNote(goBack = false)
             is NoteIntent.NavigationBack -> saveNote(goBack = true)
             is NoteIntent.DeleteNote -> {
@@ -34,10 +39,22 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    private fun loadNote(noteId: Int?) {
+    private fun loadNoteAndCategories(noteId: Int?) {
         updateState { copy(isLoading = true, errorMessage = null) }
         viewModelScope.launch {
             try {
+                // Fetch categories
+                val categoryEntities = categoryDao.getCategories()
+                val availableCategories = categoryEntities.map { entity ->
+                    CategoryUIModel(
+                        id = entity.id,
+                        name = entity.name,
+                        emoji = entity.message,
+                        description = entity.description,
+                        color = ColorItemUIModel(color = NoteColor.fromOrdinal(entity.color))
+                    )
+                }
+
                 if (noteId == null || noteId == -1) {
                     // Create new note
                     val defaultCategory = getDefaultCategory.invoke()
@@ -48,7 +65,8 @@ class NoteViewModel @Inject constructor(
                         copy(
                             isLoading = false,
                             note = newNote,
-                            isEditable = true
+                            isEditable = true,
+                            availableCategories = availableCategories
                         )
                     }
                 } else {
@@ -59,7 +77,8 @@ class NoteViewModel @Inject constructor(
                             copy(
                                 isLoading = false,
                                 note = note,
-                                isEditable = true
+                                isEditable = true,
+                                availableCategories = availableCategories
                             )
                         }
                     } else {
@@ -100,7 +119,13 @@ class NoteViewModel @Inject constructor(
     private fun changeCategory(category: CategoryUIModel) {
         val currentNote = currentState.note ?: return
         updateState {
-            copy(note = currentNote.newCopy().apply { this.category = category; this.color = category.color.color.ordinal })
+            copy(
+                note = currentNote.newCopy().apply { 
+                    this.category = category 
+                    this.color = category.color.color.ordinal 
+                },
+                isCategorySheetVisible = false
+            )
         }
     }
 

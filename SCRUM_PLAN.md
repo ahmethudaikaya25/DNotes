@@ -147,10 +147,10 @@
 - [x] `refactor: rewrite NoteViewModel to extend MviViewModel`
 - [x] `feat: add NoteScreen composable with title + body fields`
 
-### Story 3.2 — Category Selection Sheet
+### Story 3.2 — Category Selection Sheet ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add SelectCategorySheet as ModalBottomSheet inside NoteScreen`
-- [ ] `feat: wire category selection to note state update`
+- [x] `feat: add SelectCategorySheet as ModalBottomSheet inside NoteScreen`
+- [x] `feat: wire category selection to note state update`
 
 ### Story 3.3 — Delete Button
 **Commits:**
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 3, Story 3.1 — COMPLETE**
-> 🟡 **Sprint 3, Story 3.2 — Category Selection Sheet — Next**
+> ✅ **Sprint 3, Story 3.2 — COMPLETE**
+> 🟡 **Sprint 3, Story 3.3 — Delete Button & Toolbar Auto-Save — Next**

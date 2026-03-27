@@ -10,7 +10,9 @@ data class NoteState(
     val isLoading: Boolean = false,
     val note: BaseNoteUIModel? = null,
     val isEditable: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isCategorySheetVisible: Boolean = false,
+    val availableCategories: List<CategoryUIModel> = emptyList()
 ) : UiState
 
 sealed interface NoteIntent : UiIntent {
@@ -21,6 +23,7 @@ sealed interface NoteIntent : UiIntent {
     object SaveNote : NoteIntent
     object DeleteNote : NoteIntent
     object NavigationBack : NoteIntent
+    data class ToggleCategorySheet(val isVisible: Boolean) : NoteIntent
 }
 
 sealed interface NoteEffect : UiEffect {
