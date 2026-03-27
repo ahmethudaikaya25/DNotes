@@ -124,7 +124,7 @@
 
 ### Story 2.3 — Group By Feature
 **Commits:**
-- [ ] `feat: add group-by toolbar option (Category, Date, Color, Pinned)`
+- [x] `feat: add group-by toolbar option (Category, Date, Color, Pinned)`
 - [ ] `feat: add grouped list rendering with section headers`
 - [ ] `feat: add "View All" action in category group header`
 - [ ] `feat: persist group-by selection in DataStore`

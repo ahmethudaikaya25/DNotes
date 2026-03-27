@@ -20,7 +20,9 @@ import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import com.duhapp.dnotes.features.home.components.GroupByToolbar
 import com.duhapp.dnotes.features.home.components.SortByToolbar
 import com.duhapp.dnotes.foundation.navigation.Route
 
@@ -115,22 +117,29 @@ private fun HomeContent(
             )
         }
         else -> {
-            if (state.groupBy == GroupBy.NONE) {
-                // Flat note list with Sort Toolbar
-                Column(modifier = modifier.fillMaxSize()) {
-                    SortByToolbar(
-                        currentSort = state.sortBy,
-                        onSortChanged = { sortBy -> onIntent(HomeIntent.OnSortByChanged(sortBy)) }
-                    )
+            Column(modifier = modifier.fillMaxSize()) {
+                // To keep it clean, maybe just show them dynamically or side-by-side 
+                // but since they are LazyRows, they must be separated into rows.
+                SortByToolbar(
+                    currentSort = state.sortBy,
+                    onSortChanged = { sortBy -> onIntent(HomeIntent.OnSortByChanged(sortBy)) }
+                )
+                GroupByToolbar(
+                    currentGroup = state.groupBy,
+                    onGroupChanged = { groupBy -> onIntent(HomeIntent.OnGroupByChanged(groupBy)) }
+                )
+
+                if (state.groupBy == GroupBy.NONE) {
+                    // Flat note list
                     com.duhapp.dnotes.features.home.components.NoteList(
                         notes = state.notes,
                         onNoteClick = { noteId -> onIntent(HomeIntent.OnNoteClicked(noteId)) },
                         modifier = Modifier.weight(1f)
                     )
+                } else {
+                    // Grouped by Category (Story 2.3)
+                    // TODO: Render Categories list
                 }
-            } else {
-                // Grouped by Category (Story 2.3)
-                // TODO: Render Categories list
             }
         }
     }
