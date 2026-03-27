@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.duhapp.dnotes.features.home.HomeScreenRoute
 
 /**
  * Root navigation graph for the DNotes Compose UI.
@@ -33,7 +34,11 @@ fun AppNavGraph(
 
         // ── Home ──────────────────────────────────────────────────────────────
         composable<Route.Home> {
-            // TODO(Sprint 2): HomeScreenRoute(navController)
+            HomeScreenRoute(
+                onNavigate = { route ->
+                    navController.navigate(route)
+                }
+            )
         }
 
         // ── Note Editor ───────────────────────────────────────────────────────

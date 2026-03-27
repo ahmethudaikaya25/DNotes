@@ -129,11 +129,11 @@
 - [x] `feat: add "View All" action in category group header`
 - [x] `feat: persist group-by selection in DataStore`
 
-### Story 2.4 — Wire Home Navigation
+### Story 2.4 — Wire Home Navigation ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: wire HomeScreen → NoteScreen navigation`
-- [ ] `feat: wire HomeScreen → AllNotesScreen navigation`
-- [ ] `feat: replace HomeFragment with HomeScreen in nav graph`
+- [x] `feat: wire HomeScreen → NoteScreen navigation`
+- [x] `feat: wire HomeScreen → AllNotesScreen navigation`
+- [x] `feat: replace HomeFragment with HomeScreen in nav graph`
 
 ---
 
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 2, Story 2.3 — COMPLETE**
-> 🟡 **Sprint 2, Story 2.4 — Wire Home Navigation — Next**
+> ✅ **Sprint 2 — COMPLETE**
+> 🟡 **Sprint 3, Story 3.1 — Note Editor Scaffold & ViewModel — Next**
