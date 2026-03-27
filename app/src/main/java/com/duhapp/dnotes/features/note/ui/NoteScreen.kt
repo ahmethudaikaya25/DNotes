@@ -13,6 +13,10 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -99,7 +103,16 @@ fun NoteScreen(
     BaseScreenScaffold(
         showBackButton = true,
         onBackClick = { onIntent(NoteIntent.NavigationBack) },
+        title = "Note Editor",
         topBarActions = {
+            // Auto-save indicator
+            Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "Saved",
+                tint = textColor.copy(alpha = 0.6f),
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            
             if (state.note != null) {
                 IconButton(onClick = { onIntent(NoteIntent.DeleteNote) }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note", tint = textColor)
@@ -214,8 +227,9 @@ private fun NoteEditorContent(
                 lineHeight = 28.sp
             ),
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 8.dp, bottom = 16.dp),
+                .fillMaxWidth()
+                .weight(1f) // Fill remaining space above toolbar
+                .padding(top = 8.dp),
             cursorBrush = SolidColor(textColor),
             decorationBox = { innerTextField ->
                 Box {
@@ -232,5 +246,23 @@ private fun NoteEditorContent(
                 }
             }
         )
+        
+        // Formatting Toolbar (Placeholder)
+        androidx.compose.foundation.layout.Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            IconButton(onClick = { /* Placeholder for Bold */ }) {
+                Icon(imageVector = Icons.Default.Edit, contentDescription = "Bold", tint = textColor)
+            }
+            IconButton(onClick = { /* Placeholder for Italic */ }) {
+                Icon(imageVector = Icons.Default.Edit, contentDescription = "Italic", tint = textColor)
+            }
+            IconButton(onClick = { /* Placeholder for Bullet List */ }) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "List", tint = textColor)
+            }
+        }
     }
 }

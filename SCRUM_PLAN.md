@@ -158,11 +158,11 @@
 - [x] `feat: add ConfirmDialog for note deletion`
 - [x] `feat: auto-save on navigation back`
 
-### Story 3.4 — Auto-save & Formatting Toolbar
+### Story 3.4 — Auto-save & Formatting Toolbar ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add auto-save indicator to NoteScreen`
-- [ ] `feat: add bottom formatting toolbar (placeholder actions)`
-- [ ] `feat: replace NoteFragment with NoteScreen in nav graph`
+- [x] `feat: add auto-save indicator to NoteScreen`
+- [x] `feat: add bottom formatting toolbar (placeholder actions)`
+- [x] `feat: replace NoteFragment with NoteScreen in nav graph`
 
 ---
 
