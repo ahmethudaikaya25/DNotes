@@ -95,12 +95,12 @@
 - [x] `feat: add DNotesBottomNavigation composable`
 - [x] `feat: add BaseScreenScaffold composable wrapper`
 
-### Story 1.4 — Feedback & State Components
+### Story 1.4 — Feedback & State Components ✅ *[DONE]*
 **Commits:**
 - [x] `feat: add LoadingScreen composable`
 - [x] `feat: add EmptyStateView composable with illustration`
 - [x] `feat: add ConfirmDialog and InfoDialog composables`
-- [ ] `feat: add BaseModalSheet composable wrapper`
+- [x] `feat: add BaseModalSheet composable wrapper`
 
 ---
 
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 1, Story 1.3 — COMPLETE**
-> 🟡 **Sprint 1, Story 1.4 — Feedback & State Components — Next**
+> ✅ **Sprint 1 — COMPLETE**
+> 🟡 **Sprint 2, Story 2.1 — Home Screen ViewModel & State — Next**
