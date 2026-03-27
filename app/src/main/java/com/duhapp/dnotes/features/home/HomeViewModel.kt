@@ -1,86 +1,61 @@
 package com.duhapp.dnotes.features.home
 
-import com.duhapp.dnotes.R
+import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.features.add_or_update_category.domain.FetchHomeData
-import com.duhapp.dnotes.features.base.domain.CustomException
-import com.duhapp.dnotes.features.base.domain.CustomExceptionCode
-import com.duhapp.dnotes.features.base.domain.CustomExceptionData
-import com.duhapp.dnotes.features.base.ui.FragmentUIEvent
-import com.duhapp.dnotes.features.base.ui.FragmentUIState
-import com.duhapp.dnotes.features.base.ui.FragmentViewModel
-import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
-import com.duhapp.dnotes.features.home.home_screen_category.ui.HomeCategoryUIModel
+import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val fetchHomeData: FetchHomeData
-) : FragmentViewModel<HomeUIEvent, HomeUIState>() {
+) : MviViewModel<HomeIntent, HomeState, HomeEffect>(HomeState()) {
 
     init {
-        setState(
-            HomeUIState.Success(
-                mutableListOf()
-            )
-        )
+        // Automatically load content on init for now
+        processIntent(HomeIntent.LoadContent)
     }
 
-    fun loadCategories() {
-        run {
-            fetchHomeData.invoke().let { categories ->
+    override fun processIntent(intent: HomeIntent) {
+        when (intent) {
+            is HomeIntent.LoadContent -> loadCategories()
+            is HomeIntent.OnAddNoteClicked -> emitEffect(HomeEffect.NavigateToNote(null))
+            is HomeIntent.OnNoteClicked -> emitEffect(HomeEffect.NavigateToNote(intent.noteId))
+            is HomeIntent.OnCategoryViewAllClicked -> emitEffect(HomeEffect.NavigateToAllNotes(intent.categoryId))
+        }
+    }
+
+    private fun loadCategories() {
+        updateState { copy(isLoading = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                val categories = fetchHomeData.invoke()
                 if (categories.isEmpty()) {
-                    setState(
-                        HomeUIState.Error(
-                            CustomException.ThereIsNoSuitableVariableException(
-                                CustomExceptionData(
-                                    title = R.string.Data_Not_Found,
-                                    message = R.string.Note_Data_Not_Found,
-                                    code = CustomExceptionCode.THERE_IS_NO_SUITABLE_VARIABLE_EXCEPTION.code,
-                                )
-                            )
+                    updateState {
+                        copy(
+                            isLoading = false,
+                            categories = emptyList(),
+                            errorMessage = "No notes found. Create one!"
                         )
-                    )
+                    }
                 } else {
-                    setState(
-                        HomeUIState.Success(
-                            categories as MutableList<HomeCategoryUIModel>
+                    updateState {
+                        copy(
+                            isLoading = false,
+                            categories = categories,
+                            errorMessage = null
                         )
+                    }
+                }
+            } catch (e: Exception) {
+                updateState {
+                    copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "An error occurred"
                     )
                 }
             }
         }
     }
-
-    fun onNoteClick(noteUIModel: BaseNoteUIModel) {
-        setEvent(HomeUIEvent.OnNoteClicked(noteUIModel))
-    }
-
-    fun onCategoryViewAllClicked(homeCategoryUIModel: HomeCategoryUIModel) {
-        setEvent(HomeUIEvent.OnViewAllClicked(homeCategoryUIModel))
-    }
-
-}
-
-sealed interface HomeUIState : FragmentUIState {
-    data class Success(
-        var categories: MutableList<HomeCategoryUIModel> = mutableListOf(),
-    ) : HomeUIState
-
-    data class Error(
-        var customException: CustomException
-    ) : HomeUIState
-
-    fun isSuccess() = this is Success
-
-    fun isError() = this is Error
-
-    fun getException() = if (isError()) (this as Error).customException else null
-
-    fun getSuccessCategories() = if (isSuccess()) (this as Success).categories else null
-}
-
-sealed interface HomeUIEvent : FragmentUIEvent {
-    data class OnNoteClicked(val noteUIModel: BaseNoteUIModel) : HomeUIEvent
-    data class OnViewAllClicked(val homeCategoryUIModel: HomeCategoryUIModel) : HomeUIEvent
 }

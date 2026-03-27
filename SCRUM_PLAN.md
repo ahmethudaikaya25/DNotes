@@ -108,10 +108,12 @@
 
 **Goal:** Home screen is fully migrated to Compose with Sort By + Group By.
 
-### Story 2.1 — Home Screen Scaffold & ViewModel
+### Story 2.1 — Home Screen ViewModel & State
 **Commits:**
-- [ ] `feat: add HomeIntent, HomeState, HomeEffect sealed classes`
-- [ ] `refactor: rewrite HomeViewModel to extend MviViewModel`
+- [x] `refactor(home): migrate HomeState to use new UiState interface`
+- [x] `refactor(home): migrate HomeUIEvent to HomeIntent (UiIntent)`
+- [x] `refactor(home): migrate HomeViewModel to extend MviViewModel`
+- [ ] `feat(home): add grouping and sorting properties to state`
 - [ ] `feat: add HomeScreen composable scaffold with top bar`
 
 ### Story 2.2 — Note List (Flat, Sorted)
