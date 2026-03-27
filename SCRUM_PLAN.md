@@ -91,7 +91,7 @@
 
 ### Story 1.3 — Scaffold & Navigation Components
 **Commits:**
-- [ ] `feat: add DNotesTopBar composable with back button + actions`
+- [x] `feat: add DNotesTopBar composable with back button + actions`
 - [ ] `feat: add DNotesBottomNavigation composable`
 - [ ] `feat: add BaseScreenScaffold composable wrapper`
 
