@@ -118,7 +118,7 @@
 
 ### Story 2.2 — Note List (Flat, Sorted)
 **Commits:**
-- [ ] `feat: add flat note list with NoteCard in HomeScreen`
+- [x] `feat: add flat note list with NoteCard in HomeScreen`
 - [ ] `feat: add sort-by toolbar (chips: Date ↕, Modified, Title, Color)`
 - [ ] `feat: persist sort selection in DataStore`
 

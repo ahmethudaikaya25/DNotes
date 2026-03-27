@@ -111,8 +111,17 @@ private fun HomeContent(
             )
         }
         else -> {
-            // Placeholder for Story 2.2 / 2.3 lists
-            // Will render flat notes list or grouped categories based on state.groupBy
+            if (state.groupBy == GroupBy.NONE) {
+                // Flat note list
+                com.duhapp.dnotes.features.home.components.NoteList(
+                    notes = state.notes,
+                    onNoteClick = { noteId -> onIntent(HomeIntent.OnNoteClicked(noteId)) },
+                    modifier = modifier
+                )
+            } else {
+                // Grouped by Category (Story 2.3)
+                // TODO: Render Categories list
+            }
         }
     }
 }
