@@ -86,7 +86,7 @@
 ### Story 1.2 — Category Components
 **Commits:**
 - [x] `feat: add CategoryChip composable (emoji + name + color)`
-- [ ] `feat: add ColorSelectorRow composable for category color picker`
+- [x] `feat: add ColorSelectorRow composable for category color picker`
 - [ ] `feat: add EmojiPickerField composable`
 
 ### Story 1.3 — Scaffold & Navigation Components
