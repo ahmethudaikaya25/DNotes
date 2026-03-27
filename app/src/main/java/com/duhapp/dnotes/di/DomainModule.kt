@@ -53,7 +53,7 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideNoteRepository(noteDao: NoteDao): NoteRepository {
-        return NoteRepositoryImpl(noteDao, Dispatchers.IO)
+    fun provideNoteRepository(noteDao: NoteDao, categoryDao: CategoryDao): NoteRepository {
+        return NoteRepositoryImpl(noteDao, categoryDao, Dispatchers.IO)
     }
 }

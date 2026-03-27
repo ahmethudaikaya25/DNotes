@@ -10,6 +10,7 @@ import com.duhapp.dnotes.features.home.HomeScreenRoute
 import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenRoute
 import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenRoute
 import com.duhapp.dnotes.features.note.ui.NoteEditorScreenRoute
+import com.duhapp.dnotes.features.search.ui.SearchScreenRoute
 
 /**
  * Root navigation graph for the DNotes Compose UI.
@@ -79,14 +80,19 @@ fun AppNavGraph(
             )
         }
 
+        // ── Search ──────────────────────────────────────────────────────────
+        composable<Route.Search> {
+            SearchScreenRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToNote = { noteId ->
+                    navController.navigate(Route.NoteEditor(noteId))
+                }
+            )
+        }
+
         // ── Notifications ─────────────────────────────────────────────────────
         composable<Route.Notifications> {
             // TODO: NotificationsScreenRoute()
-        }
-
-        // ── Search ────────────────────────────────────────────────────────────
-        composable<Route.Search> {
-            // TODO(Sprint 7): SearchScreenRoute(navController)
         }
 
         // ── Settings ──────────────────────────────────────────────────────────

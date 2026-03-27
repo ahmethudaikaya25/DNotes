@@ -13,6 +13,7 @@ import timber.log.Timber
 
 class NoteRepositoryImpl(
     private val noteDao: NoteDao,
+    private val categoryDao: CategoryDao,
     dispatchers: CoroutineDispatcher,
 ) : NoteRepository, BaseRepository(dispatchers) {
 
@@ -89,6 +90,23 @@ class NoteRepositoryImpl(
                 CustomExceptionData(
                     title = R.string.Error_Database,
                     message = R.string.Error_While_Deleting_Note,
+                    code = CustomExceptionCode.DATABASE_EXCEPTION.code
+                )
+            )
+        }
+    override suspend fun searchNotes(query: String): List<BaseNoteUIModel> = runOnIO {
+        try {
+            val categories = categoryDao.getCategories().associateBy { it.id }
+            noteDao.getNotesByQuery(query).map { noteEntity ->
+                val categoryEntity = categories[noteEntity.categoryId]
+                noteEntity.toUIModel(categoryEntity?.toUIModel() ?: CategoryUIModel())
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            throw CustomException.DatabaseException(
+                CustomExceptionData(
+                    title = R.string.Error_Database,
+                    message = R.string.Error_While_Fetching_Note,
                     code = CustomExceptionCode.DATABASE_EXCEPTION.code
                 )
             )

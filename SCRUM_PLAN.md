@@ -237,14 +237,14 @@
 
 **Goal:** Global note search across title + body.
 
-### Story 7.1 — Search Screen
+### Story 7.1 — Search Screen ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add SearchScreen composable with search bar`
-- [ ] `feat: add SearchViewModel (MviViewModel) with real-time query`
-- [ ] `feat: add SearchNotes use case (Room LIKE query)`
-- [ ] `feat: add SearchNoteDao query method`
-- [ ] `feat: wire SearchScreen → NoteScreen navigation`
-- [ ] `feat: add search icon to HomeScreen top bar`
+- [x] `feat: add SearchScreen composable with search bar`
+- [x] `feat: add SearchViewModel (MviViewModel) with real-time query`
+- [x] `feat: add SearchNotes use case (Room LIKE query)`
+- [x] `feat: add SearchNoteDao query method`
+- [x] `feat: wire SearchScreen → NoteScreen navigation`
+- [x] `feat: add search icon to HomeScreen top bar`
 
 ---
 
@@ -318,5 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ---
 
-> ✅ **Sprint 6 — STORAGE UPGRADE COMPLETE**
-> 🟡 **Sprint 7, Story 7.1 — Global Note Search — Next**
+> ✅ **Sprint 7 — SEARCH SCREEN COMPLETE**
+> 🟡 **Sprint 8, Story 8.1 — Settings Screen — Next**

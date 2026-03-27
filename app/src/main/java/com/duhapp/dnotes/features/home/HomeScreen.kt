@@ -58,13 +58,13 @@ fun HomeScreen(
     BaseScreenScaffold(
         title = stringResource(id = R.string.title_home),
         topBarActions = {
-            IconButton(onClick = { /* TODO: Navigate to Search -> intent eventually */ }) {
+            IconButton(onClick = { onNavigate(Route.Search) }) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search Notes"
                 )
             }
-            IconButton(onClick = { /* TODO: Navigate to Settings */ }) {
+            IconButton(onClick = { onNavigate(Route.Settings) }) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings"
