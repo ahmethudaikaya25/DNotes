@@ -141,11 +141,11 @@
 
 **Goal:** Note editor fully migrated to Compose with delete button and category sheet.
 
-### Story 3.1 — Note Editor Scaffold & ViewModel
+### Story 3.1 — Note Editor Scaffold & ViewModel ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add NoteIntent, NoteState, NoteEffect sealed classes`
-- [ ] `refactor: rewrite NoteViewModel to extend MviViewModel`
-- [ ] `feat: add NoteScreen composable with title + body fields`
+- [x] `feat: add NoteIntent, NoteState, NoteEffect sealed classes`
+- [x] `refactor: rewrite NoteViewModel to extend MviViewModel`
+- [x] `feat: add NoteScreen composable with title + body fields`
 
 ### Story 3.2 — Category Selection Sheet
 **Commits:**
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 2 — COMPLETE**
-> 🟡 **Sprint 3, Story 3.1 — Note Editor Scaffold & ViewModel — Next**
+> ✅ **Sprint 3, Story 3.1 — COMPLETE**
+> 🟡 **Sprint 3, Story 3.2 — Category Selection Sheet — Next**
