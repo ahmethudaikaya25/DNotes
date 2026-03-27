@@ -27,11 +27,11 @@
 
 **Goal:** The project compiles with Compose. No visible UI change yet.
 
-### Story 0.1 — Upgrade Dependencies & Enable Compose ✅ *[NEXT]*
+### Story 0.1 — Upgrade Dependencies & Enable Compose ✅ *[DONE]*
 **Commits:**
-- [ ] `chore: upgrade Kotlin to 1.9.22 and AGP plugins`
-- [ ] `chore: add Compose BOM, Material3, and Activity-Compose dependencies`
-- [ ] `chore: enable Compose build features and set compiler extension version`
+- [x] `chore: upgrade Kotlin to 1.9.22 and AGP plugins`
+- [x] `chore: add Compose BOM, Material3, and Activity-Compose dependencies`
+- [x] `chore: enable Compose build features and set compiler extension version`
 
 **Acceptance Criteria:**
 - Project builds and existing app runs unchanged
@@ -39,10 +39,10 @@
 
 ---
 
-### Story 0.2 — MVI Base Architecture
+### Story 0.2 — MVI Base Architecture ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add UiState, UiIntent, UiEffect base interfaces`
-- [ ] `feat: add MviViewModel base class with StateFlow + Channel`
+- [x] `feat: add UiState, UiIntent, UiEffect base interfaces`
+- [x] `feat: add MviViewModel base class with StateFlow + Channel`
 
 **Acceptance Criteria:**
 - `MviViewModel` compiles and is ready to be subclassed
@@ -50,10 +50,10 @@
 
 ---
 
-### Story 0.3 — Compose Navigation Setup
+### Story 0.3 — Compose Navigation Setup ✅ *[DONE]*
 **Commits:**
-- [ ] `chore: add Compose Navigation and Hilt-Navigation-Compose deps`
-- [ ] `feat: create AppNavGraph skeleton with placeholder routes`
+- [x] `chore: add Compose Navigation and Hilt-Navigation-Compose deps`
+- [x] `feat: create AppNavGraph skeleton with placeholder routes`
 
 **Acceptance Criteria:**
 - Navigation graph compiles with all screen routes declared
@@ -61,11 +61,11 @@
 
 ---
 
-### Story 0.4 — Material 3 Design System
+### Story 0.4 — Material 3 Design System ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: create DNotesTheme with Material3 color scheme, typography, shapes`
-- [ ] `feat: add Plus Jakarta Sans font via Google Fonts`
-- [ ] `feat: define dark/light color palettes`
+- [x] `feat: create DNotesTheme with Material3 color scheme, typography, shapes`
+- [x] `feat: add Plus Jakarta Sans font via Google Fonts`
+- [x] `feat: define dark/light color palettes`
 
 **Acceptance Criteria:**
 - Theme is defined and can wrap any Composable
@@ -318,4 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> 🟡 **Sprint 0, Story 0.1 — In Progress**
+> ✅ **Sprint 0 — COMPLETE** (4 stories, 4 commits)
+> 🟡 **Sprint 1, Story 1.1 — NoteCard Composable — Next**
