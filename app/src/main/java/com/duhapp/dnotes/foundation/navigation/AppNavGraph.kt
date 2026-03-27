@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.duhapp.dnotes.features.home.HomeScreenRoute
 import com.duhapp.dnotes.features.all_notes.ui.AllNotesScreenRoute
+import com.duhapp.dnotes.features.manage_category.ui.ManageCategoryScreenRoute
 import com.duhapp.dnotes.features.note.ui.NoteEditorScreenRoute
 
 /**
@@ -71,7 +72,11 @@ fun AppNavGraph(
 
         // ── Manage Category ───────────────────────────────────────────────────
         composable<Route.ManageCategory> {
-            // TODO(Sprint 5): ManageCategoryScreenRoute(navController)
+            ManageCategoryScreenRoute(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // ── Notifications ─────────────────────────────────────────────────────

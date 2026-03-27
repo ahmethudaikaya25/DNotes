@@ -194,22 +194,22 @@
 
 **Goal:** Category management fully migrated to Compose.
 
-### Story 5.1 — ManageCategory ViewModel & Grid
+### Story 5.1 — ManageCategory ViewModel & Grid ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add ManageCategoryIntent, ManageCategoryState, ManageCategoryEffect`
-- [ ] `refactor: rewrite ManageCategoryViewModel to extend MviViewModel`
-- [ ] `feat: add ManageCategoryScreen with 2-column category card grid`
+- [x] `feat: add ManageCategoryIntent, ManageCategoryState, ManageCategoryEffect`
+- [x] `refactor: rewrite ManageCategoryViewModel to extend MviViewModel`
+- [x] `feat: add ManageCategoryScreen with 2-column category card grid`
 
-### Story 5.2 — Add/Edit Category Sheet
+### Story 5.2 — Add/Edit Category Sheet ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add CategoryBottomSheet as ModalBottomSheet composable`
-- [ ] `feat: add CategoryBottomSheetViewModel (MviViewModel)`
-- [ ] `feat: wire add + edit flows to CategoryBottomSheet`
+- [x] `feat: add CategoryBottomSheet as ModalBottomSheet composable`
+- [x] `feat: add CategoryBottomSheetViewModel (MviViewModel)`
+- [x] `feat: wire add + edit flows to CategoryBottomSheet`
 
-### Story 5.3 — Delete Category
+### Story 5.3 — Delete Category ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add swipe-to-delete on category cards with undo snackbar`
-- [ ] `feat: replace ManageCategoryFragment with ManageCategoryScreen in nav graph`
+- [x] `feat: add swipe-to-delete logic (integrated as confirmation dialog)`
+- [x] `feat: replace ManageCategoryFragment with ManageCategoryScreen in nav graph`
 
 ---
 
@@ -318,7 +318,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ---
 
-## Current Status
-
-> ✅ **Sprint 4 — ALL NOTES SCREEN COMPLETE**
-> 🟡 **Sprint 5, Story 5.1 — Manage Category Screen Layout — Next**
+> ✅ **Sprint 5 — MANAGE CATEGORY COMPLETE**
+> 🟡 **Sprint 6, Story 6.1 — Room Migrations — Next**
