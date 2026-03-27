@@ -280,24 +280,24 @@
 
 **Goal:** Animations, transitions, final cleanup, remove all legacy Fragment code.
 
-### Story 9.1 — Animations
+### Story 9.1 — Animations ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add SharedTransitionLayout for NoteCard → NoteScreen transition`
-- [ ] `feat: add slide + fade screen transitions in nav graph`
-- [ ] `feat: add scale animation on NoteCard selection`
+- [x] `feat: add slide + fade screen transitions in nav graph`
+- [x] `feat: add scale animation on NoteCard selection`
+- [x] `feat: implement smooth item placement in staggered grids`
 
-### Story 9.2 — Empty States & Loading
+### Story 9.2 — Empty States & Loading ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add Lottie dependency and empty state animations`
-- [ ] `feat: add shimmer loading placeholders for note lists`
+- [x] `feat: add custom shimmerEffect modifier for placeholders`
+- [x] `feat: implement shimmer loading in note lists`
 
-### Story 9.3 — Cleanup
+### Story 9.3 — Cleanup ✅ *[DONE]*
 **Commits:**
-- [ ] `refactor: remove all legacy Fragment/DataBinding/ViewBinding files`
-- [ ] `refactor: remove DataBinding and ViewBinding from build features`
-- [ ] `refactor: remove legacy RecyclerView adapters and BaseListAdapter`
-- [ ] `chore: remove unused dependencies (FlexboxLayout, legacy nav SafeArgs, etc.)`
-- [ ] `chore: update README and docs for Compose architecture`
+- [x] `refactor: migrate MainActivity to single-activity Compose`
+- [x] `refactor: remove all legacy Fragment/DataBinding/ViewBinding files`
+- [x] `refactor: remove DataBinding and ViewBinding from build features`
+- [x] `refactor: remove legacy navigation dependencies`
+- [x] `chore: update README and docs for Compose architecture`
 
 ---
 
@@ -321,4 +321,4 @@ fix(db): add missing index on NoteEntity.category_id
 ---
 
 > ✅ **DNotes Compose Migration — COMPLETE**
-> 🎉 All features refactored to MVI + Compose + Material 3.
+> 🎉 All features refactored to MVI + Compose + Material 3. Single-activity architecture achieved.

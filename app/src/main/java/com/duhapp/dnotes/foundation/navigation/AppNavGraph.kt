@@ -1,6 +1,11 @@
 package com.duhapp.dnotes.foundation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,6 +43,18 @@ fun AppNavGraph(
     NavHost(
         navController = navController,
         startDestination = Route.Home,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(400)) + fadeOut(animationSpec = tween(400))
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { -1000 }, animationSpec = tween(400)) + fadeIn(animationSpec = tween(400))
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(400)) + fadeOut(animationSpec = tween(400))
+        }
     ) {
 
         // ── Home ──────────────────────────────────────────────────────────────
