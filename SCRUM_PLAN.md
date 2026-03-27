@@ -99,7 +99,7 @@
 **Commits:**
 - [x] `feat: add LoadingScreen composable`
 - [x] `feat: add EmptyStateView composable with illustration`
-- [ ] `feat: add ConfirmDialog and InfoDialog composables`
+- [x] `feat: add ConfirmDialog and InfoDialog composables`
 - [ ] `feat: add BaseModalSheet composable wrapper`
 
 ---
