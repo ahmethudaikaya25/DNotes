@@ -114,7 +114,7 @@
 - [x] `refactor(home): migrate HomeUIEvent to HomeIntent (UiIntent)`
 - [x] `refactor(home): migrate HomeViewModel to extend MviViewModel`
 - [x] `feat(home): add grouping and sorting properties to state`
-- [ ] `feat: add HomeScreen composable scaffold with top bar`
+- [x] `feat: add HomeScreen composable scaffold with top bar`
 
 ### Story 2.2 — Note List (Flat, Sorted)
 **Commits:**
