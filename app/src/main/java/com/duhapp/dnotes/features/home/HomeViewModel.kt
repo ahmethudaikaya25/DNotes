@@ -23,6 +23,8 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.OnAddNoteClicked -> emitEffect(HomeEffect.NavigateToNote(null))
             is HomeIntent.OnNoteClicked -> emitEffect(HomeEffect.NavigateToNote(intent.noteId))
             is HomeIntent.OnCategoryViewAllClicked -> emitEffect(HomeEffect.NavigateToAllNotes(intent.categoryId))
+            is HomeIntent.OnSortByChanged -> updateState { copy(sortBy = intent.sortBy) }
+            is HomeIntent.OnGroupByChanged -> updateState { copy(groupBy = intent.groupBy) }
         }
     }
 
