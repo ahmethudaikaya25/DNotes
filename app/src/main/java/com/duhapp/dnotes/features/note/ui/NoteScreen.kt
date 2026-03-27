@@ -12,10 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -29,6 +36,7 @@ import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.theme.toComposeColors
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.CategoryChip
+import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
 
@@ -42,13 +50,15 @@ fun NoteEditorScreenRoute(
         viewModel.processIntent(NoteIntent.LoadNote(noteId))
     }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     MviScreen(
         viewModel = viewModel,
         onEffect = { effect ->
             when (effect) {
                 is NoteEffect.NavigateBack -> onNavigateBack()
                 is NoteEffect.ShowDeleteConfirmation -> {
-                    // Handled in Story 3.3
+                    showDeleteDialog = true
                 }
                 is NoteEffect.ShowToast -> {
                     // Typically show a real toast or snackbar
@@ -60,6 +70,20 @@ fun NoteEditorScreenRoute(
             state = state,
             onIntent = viewModel::processIntent
         )
+        
+        if (showDeleteDialog) {
+            ConfirmDialog(
+                title = "Delete Note",
+                body = "Are you sure you want to delete this note?",
+                onConfirm = {
+                    showDeleteDialog = false
+                    viewModel.processIntent(NoteIntent.ConfirmDeleteNote)
+                },
+                onDismiss = {
+                    showDeleteDialog = false
+                }
+            )
+        }
     }
 }
 
@@ -75,6 +99,13 @@ fun NoteScreen(
     BaseScreenScaffold(
         showBackButton = true,
         onBackClick = { onIntent(NoteIntent.NavigationBack) },
+        topBarActions = {
+            if (state.note != null) {
+                IconButton(onClick = { onIntent(NoteIntent.DeleteNote) }) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note", tint = textColor)
+                }
+            }
+        },
         modifier = Modifier.background(colorLight)
     ) { paddingValues ->
         when {

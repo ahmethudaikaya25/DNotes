@@ -152,11 +152,11 @@
 - [x] `feat: add SelectCategorySheet as ModalBottomSheet inside NoteScreen`
 - [x] `feat: wire category selection to note state update`
 
-### Story 3.3 — Delete Button
+### Story 3.3 — Delete Button & Toolbar Auto-Save ✅ *[DONE]*
 **Commits:**
-- [ ] `feat: add delete button to NoteScreen top bar (edit mode only)`
-- [ ] `feat: add delete confirmation dialog in NoteScreen`
-- [ ] `feat: wire delete to DeleteNote use case + navigate back`
+- [x] `feat: add delete acton in top app bar`
+- [x] `feat: add ConfirmDialog for note deletion`
+- [x] `feat: auto-save on navigation back`
 
 ### Story 3.4 — Auto-save & Formatting Toolbar
 **Commits:**
@@ -320,5 +320,5 @@ fix(db): add missing index on NoteEntity.category_id
 
 ## Current Status
 
-> ✅ **Sprint 3, Story 3.2 — COMPLETE**
-> 🟡 **Sprint 3, Story 3.3 — Delete Button & Toolbar Auto-Save — Next**
+> ✅ **Sprint 3 — COMPLETE**
+> 🟡 **Sprint 4, Story 4.1 — All Notes Screen Layout — Next**

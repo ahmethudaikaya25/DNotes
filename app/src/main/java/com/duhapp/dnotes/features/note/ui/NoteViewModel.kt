@@ -9,6 +9,7 @@ import com.duhapp.dnotes.features.home.home_screen_category.ui.DEFAULT_NOTE_MODE
 import com.duhapp.dnotes.features.note.domain.GetDefaultCategory
 import com.duhapp.dnotes.features.note.domain.GetNoteById
 import com.duhapp.dnotes.features.note.domain.UpsertNote
+import com.duhapp.dnotes.app.database.NoteDao
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,7 +21,8 @@ class NoteViewModel @Inject constructor(
     private val upsertNote: UpsertNote,
     private val getDefaultCategory: GetDefaultCategory,
     private val getNoteById: GetNoteById,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val noteDao: NoteDao
 ) : MviViewModel<NoteIntent, NoteState, NoteEffect>(NoteState()) {
 
     override fun processIntent(intent: NoteIntent) {
@@ -33,9 +35,9 @@ class NoteViewModel @Inject constructor(
             is NoteIntent.SaveNote -> saveNote(goBack = false)
             is NoteIntent.NavigationBack -> saveNote(goBack = true)
             is NoteIntent.DeleteNote -> {
-                // To be implemented in Story 3.3
                 emitEffect(NoteEffect.ShowDeleteConfirmation)
             }
+            is NoteIntent.ConfirmDeleteNote -> deleteNote()
         }
     }
 
@@ -150,6 +152,24 @@ class NoteViewModel @Inject constructor(
                 Timber.e(e)
                 emitEffect(NoteEffect.ShowToast("Could not save note"))
             }
+        }
+    }
+
+    private fun deleteNote() {
+        val currentNote = currentState.note ?: return
+        if (currentNote.id != -1) {
+            viewModelScope.launch {
+                try {
+                    noteDao.deleteNotes(listOf(currentNote.id))
+                    emitEffect(NoteEffect.NavigateBack)
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    emitEffect(NoteEffect.ShowToast("Failed to delete note"))
+                }
+            }
+        } else {
+            // Note was not saved yet
+            emitEffect(NoteEffect.NavigateBack)
         }
     }
 }
