@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'org.jetbrains.kotlin.plugin.compose'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-android'
@@ -43,12 +44,12 @@ android {
 
     buildFeatures {
         compose true
+        buildConfig true
     }
 
     composeOptions {
-        // Compose compiler 1.5.8 is compatible with Kotlin 1.9.22
-        kotlinCompilerExtensionVersion '1.5.8'
     }
+    
     lintOptions {
         disable 'ParcelCreator' // Disable this lint check
     }
