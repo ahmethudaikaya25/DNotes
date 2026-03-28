@@ -85,7 +85,8 @@ fun ManageCategoryScreenRoute(
             ManageCategoryScreen(
                 state = state,
                 onIntent = viewModel::processIntent,
-                onDeleteRequest = { categoryToDelete = it }
+                onDeleteRequest = { categoryToDelete = it },
+                isInteractionEnabled = !showEditSheet && categoryToDelete == null
             )
         }
 
@@ -121,7 +122,8 @@ fun ManageCategoryScreenRoute(
 fun ManageCategoryScreen(
     state: ManageCategoryState,
     onIntent: (ManageCategoryIntent) -> Unit,
-    onDeleteRequest: (CategoryUIModel) -> Unit
+    onDeleteRequest: (CategoryUIModel) -> Unit,
+    isInteractionEnabled: Boolean = true
 ) {
     BaseScreenScaffold(
         title = "Manage Categories",
@@ -171,8 +173,9 @@ fun ManageCategoryScreen(
                             emoji = category.emoji,
                             description = category.description,
                             colorOrdinal = category.color?.color?.ordinal ?: 0,
-                            onClick = { onIntent(ManageCategoryIntent.OnCategoryClick(category)) },
-                            onDeleteClick = { onDeleteRequest(category) }
+                            onClick = { if (isInteractionEnabled) onIntent(ManageCategoryIntent.OnCategoryClick(category)) },
+                            onDeleteClick = { if (isInteractionEnabled) onDeleteRequest(category) },
+                            enabled = isInteractionEnabled
                         )
                     }
                 }

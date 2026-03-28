@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +39,7 @@ fun CategoryCard(
     colorOrdinal: Int,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val (colorDark, colorLight, textColor) = com.duhapp.dnotes.NoteColor.fromOrdinal(colorOrdinal).toComposeColors()
@@ -47,7 +49,8 @@ fun CategoryCard(
         color = colorLight,
         modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .alpha(if (enabled) 1f else 0.6f)
+            .clickable(enabled = enabled, onClick = onClick)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -86,7 +89,10 @@ fun CategoryCard(
                 }
             }
 
-            IconButton(onClick = onDeleteClick) {
+            IconButton(
+                onClick = onDeleteClick,
+                enabled = enabled
+            ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Category",
