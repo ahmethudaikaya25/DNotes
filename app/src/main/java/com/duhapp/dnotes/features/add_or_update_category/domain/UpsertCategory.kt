@@ -4,6 +4,7 @@ import com.duhapp.dnotes.R
 import com.duhapp.dnotes.features.add_or_update_category.data.CategoryRepository
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.features.base.domain.CustomException
+import com.duhapp.dnotes.features.add_or_update_category.domain.isEmoji
 import com.duhapp.dnotes.features.base.domain.CustomExceptionCode
 import com.duhapp.dnotes.features.base.domain.CustomExceptionData
 

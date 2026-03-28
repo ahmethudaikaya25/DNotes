@@ -43,6 +43,9 @@ abstract class MviViewModel<I : UiIntent, S : UiState, E : UiEffect>(
     /** Observed by the Compose screen to drive the UI. */
     val state: StateFlow<S> = _state.asStateFlow()
 
+    /** Returns the current state snapshot. */
+    protected val currentState: S get() = state.value
+
     // ── Effects ───────────────────────────────────────────────────────────────
     private val _effect = Channel<E>(Channel.BUFFERED)
 

@@ -45,6 +45,8 @@ fun ImportScreenRoute(
             when (effect) {
                 is ImportEffect.NavigateBack -> onNavigateBack()
                 is ImportEffect.TriggerFilePicker -> launcher.launch(arrayOf("application/octet-stream"))
+                is ImportEffect.ShowError -> { /* Handle Error Toast */ }
+                is ImportEffect.ShowSuccess -> { /* Handle Success Toast */ }
             }
         }
     ) { state ->

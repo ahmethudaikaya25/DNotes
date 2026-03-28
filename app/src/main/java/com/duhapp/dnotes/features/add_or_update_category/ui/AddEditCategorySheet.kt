@@ -130,8 +130,14 @@ private fun AddEditCategoryContent(
         )
 
         ColorSelectorRow(
-            colors = state.colors,
-            onColorSelected = { onIntent(CategoryAddEditIntent.SelectColor(it)) },
+            colors = state.colors.map { it.color.toComposeColors().first },
+            selectedColor = state.category.color.color.toComposeColors().first,
+            onColorSelected = { color ->
+                val selectedNoteColor = state.colors.find { it.color.toComposeColors().first == color }?.color
+                if (selectedNoteColor != null) {
+                    onIntent(CategoryAddEditIntent.SelectColor(selectedNoteColor))
+                }
+            },
             modifier = Modifier.padding(vertical = 12.dp)
         )
 

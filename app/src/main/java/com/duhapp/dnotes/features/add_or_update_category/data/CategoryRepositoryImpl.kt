@@ -4,15 +4,18 @@ import com.duhapp.dnotes.R
 import com.duhapp.dnotes.app.database.CategoryDao
 import com.duhapp.dnotes.app.database.NoteDao
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import com.duhapp.dnotes.features.base.data.BaseRepository
 import com.duhapp.dnotes.features.base.domain.CustomException
 import com.duhapp.dnotes.features.base.domain.CustomExceptionCode
 import com.duhapp.dnotes.features.base.domain.CustomExceptionData
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
+import com.duhapp.dnotes.features.home.home_screen_category.ui.toEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import timber.log.Timber
+import javax.inject.Inject
 
-class CategoryRepositoryImpl(
+class CategoryRepositoryImpl @Inject constructor(
     private val categoryDao: CategoryDao,
     private val noteDao: NoteDao,
     dispatcher: CoroutineDispatcher
@@ -86,18 +89,18 @@ class CategoryRepositoryImpl(
             val categoryId = insert(lastDeletedCategory!!)
             lastDeletedCategory!!.id = categoryId
             runOnIO {
-                lastMovedCategoryNotes?.mapTo(mutableListOf()) { note ->
+                lastMovedCategoryNotes?.map { note ->
                     note.newCopy().apply {
                         this.category = lastDeletedCategory!!
-                    }
-                    note.toEntity()
+                        this.colorCode = lastDeletedCategory!!.color.color
+                    }.toEntity()
                 }?.let { noteEntities ->
                     noteDao.updateNotes(noteEntities)
                 }
             }
             clearLastDeletedCategory()
         } catch (e: Exception) {
-            Timber.e("Undo process didn't succeeded, ${lastDeletedCategory.toString()} could not be inserted")
+            Timber.e("Undo process didn't succeeded")
             clearLastDeletedCategory()
             throw CustomException.DatabaseException(
                 CustomExceptionData(

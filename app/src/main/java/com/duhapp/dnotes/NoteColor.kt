@@ -1,6 +1,7 @@
 package com.duhapp.dnotes
 
 import androidx.annotation.ColorRes
+import com.duhapp.dnotes.R
 
 enum class NoteColor(
     @ColorRes val darkColor: Int = R.color.note_color_red_dark,
@@ -19,7 +20,11 @@ enum class NoteColor(
 
     companion object {
         fun fromOrdinal(ordinal: Int): NoteColor {
-            return values()[ordinal]
+            return entries[ordinal % entries.size]
+        }
+        
+        fun fromResource(@ColorRes colorRes: Int): NoteColor {
+            return entries.firstOrNull { it.darkColor == colorRes || it.lightColor == colorRes } ?: RED
         }
     }
 

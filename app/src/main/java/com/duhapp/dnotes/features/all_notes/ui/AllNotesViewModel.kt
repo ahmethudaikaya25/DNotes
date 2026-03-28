@@ -12,6 +12,7 @@ import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -43,16 +44,7 @@ class AllNotesViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Fetch categories
-                val categoryEntities = categoryDao.getCategories()
-                val availableCategories = categoryEntities.map { entity ->
-                    CategoryUIModel(
-                        id = entity.id,
-                        name = entity.name,
-                        emoji = entity.message,
-                        description = entity.description,
-                        color = ColorItemUIModel(color = NoteColor.fromOrdinal(entity.color))
-                    )
-                }
+                val availableCategories = categoryDao.getCategories().map { it.toUIModel() }
 
                 val notesById = getNotesByCategoryId.invoke(categoryId)
                 val category = notesById.firstOrNull()?.category ?: defaultCategoryModel
@@ -149,7 +141,7 @@ class AllNotesViewModel @Inject constructor(
 
                 selectedNotes.forEach {
                     it.category = category
-                    it.color = category.color.color.ordinal
+                    it.colorCode = category.color.color
                 }
                 
                 updateNotes.invoke(selectedNotes)

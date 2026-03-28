@@ -1,9 +1,5 @@
 package com.duhapp.dnotes.features.manage_category.ui
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.AddEditCategorySheet
+import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
@@ -82,7 +80,7 @@ fun ManageCategoryScreenRoute(
         categoryToDelete?.let { category ->
             ConfirmDialog(
                 title = "Delete Category",
-                body = "Are you sure you want to delete category '${category.name}'? All notes in this category will be moved to Default.",
+                message = "Are you sure you want to delete category '${category.name}'? All notes in this category will be moved to Default.",
                 onConfirm = {
                     viewModel.processIntent(ManageCategoryIntent.OnDeleteCategory(category))
                     categoryToDelete = null

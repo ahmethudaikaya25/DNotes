@@ -19,11 +19,15 @@ import androidx.compose.ui.Modifier
  * @param modifier Modifier for styling or layout.
  * @param content The main screen content, receiving inner padding values from the Scaffold.
  */
+import androidx.compose.ui.graphics.Color
+
 @Composable
 fun BaseScreenScaffold(
     title: String = "",
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
+    containerColor: Color = androidx.compose.material3.MaterialTheme.colorScheme.background,
+    contentColor: Color = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
     topBarActions: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -31,12 +35,15 @@ fun BaseScreenScaffold(
 ) {
     Scaffold(
         modifier = modifier,
+        containerColor = containerColor,
         topBar = {
             if (title.isNotEmpty() || showBackButton) {
                 DNotesTopBar(
                     title = title,
                     showBackButton = showBackButton,
                     onBackClick = onBackClick,
+                    containerColor = containerColor,
+                    contentColor = contentColor,
                     actions = topBarActions
                 )
             }

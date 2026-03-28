@@ -12,6 +12,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 
 /**
@@ -30,6 +31,8 @@ fun DNotesTopBar(
     modifier: Modifier = Modifier,
     showBackButton: Boolean = false,
     onBackClick: () -> Unit = {},
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.onBackground,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
@@ -38,7 +41,8 @@ fun DNotesTopBar(
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = contentColor
             )
         },
         navigationIcon = {
@@ -46,18 +50,19 @@ fun DNotesTopBar(
                 IconButton(onClick = onBackClick) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Navigate back"
+                        contentDescription = "Navigate back",
+                        tint = contentColor
                     )
                 }
             }
         },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.surface,
-            navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-            actionIconContentColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = containerColor,
+            scrolledContainerColor = containerColor,
+            navigationIconContentColor = contentColor,
+            titleContentColor = contentColor,
+            actionIconContentColor = contentColor,
         )
     )
 }

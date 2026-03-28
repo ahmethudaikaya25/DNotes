@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.app.database.CategoryDao
 import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.DEFAULT_NOTE_MODEL
 import com.duhapp.dnotes.features.note.domain.GetDefaultCategory
@@ -46,16 +47,7 @@ class NoteViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // Fetch categories
-                val categoryEntities = categoryDao.getCategories()
-                val availableCategories = categoryEntities.map { entity ->
-                    CategoryUIModel(
-                        id = entity.id,
-                        name = entity.name,
-                        emoji = entity.message,
-                        description = entity.description,
-                        color = ColorItemUIModel(color = NoteColor.fromOrdinal(entity.color))
-                    )
-                }
+                val availableCategories = categoryDao.getCategories().map { it.toUIModel() }
 
                 if (noteId == null || noteId == -1) {
                     // Create new note
@@ -124,7 +116,7 @@ class NoteViewModel @Inject constructor(
             copy(
                 note = currentNote.newCopy().apply { 
                     this.category = category 
-                    this.color = category.color.color.ordinal 
+                    this.colorCode = category.color.color
                 },
                 isCategorySheetVisible = false
             )

@@ -103,7 +103,7 @@ private fun CategoryNoteGroup(
                 items = category.noteList,
                 key = { it.id }
             ) { note ->
-                val noteColorEnum = NoteColor.fromOrdinal(note.color)
+                val noteColorEnum = note.colorCode
                 val (colorDark, colorLight, textColor) = noteColorEnum.toComposeColors()
 
                 NoteCard(

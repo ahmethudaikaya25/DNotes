@@ -23,9 +23,9 @@ class GetNoteById @Inject constructor(
             CategoryUIModel(
                 id = categoryEntity.id,
                 name = categoryEntity.name,
-                emoji = categoryEntity.message,
-                description = categoryEntity.description,
-                color = ColorItemUIModel(color = NoteColor.fromOrdinal(categoryEntity.color))
+                emoji = categoryEntity.emoji,
+                description = categoryEntity.message,
+                color = ColorItemUIModel(color = NoteColor.fromOrdinal(categoryEntity.colorId))
             )
         } else {
             DEFAULT_NOTE_MODEL.category
@@ -39,7 +39,7 @@ class GetNoteById @Inject constructor(
             category = categoryUIModel,
             title = noteEntity.title,
             body = noteEntity.details,
-            color = categoryUIModel.color.color.ordinal // Inherit category color per original logic
+            colorCode = categoryUIModel.color.color
         )
     }
 }

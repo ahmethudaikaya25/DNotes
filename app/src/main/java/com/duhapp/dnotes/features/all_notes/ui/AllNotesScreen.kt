@@ -136,7 +136,7 @@ fun AllNotesScreen(
                         items = state.notes,
                         key = { it.id }
                     ) { note ->
-                        val noteColorEnum = NoteColor.fromOrdinal(note.color)
+                        val noteColorEnum = note.colorCode
                         val (colorDark, colorLight, textColor) = noteColorEnum.toComposeColors()
 
                         NoteCard(

@@ -4,8 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.duhapp.dnotes.NoteColor
-import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
 
 @Entity(tableName = "CategoryEntity")
 data class CategoryEntity(
@@ -17,15 +15,4 @@ data class CategoryEntity(
     @ColumnInfo(name = "sort_order") val sortOrder: Int = 0
 ) {
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") var id: Int = 0
-
-    fun toUIModel() = CategoryUIModel(
-        id = id,
-        name = name,
-        emoji = emoji,
-        description = message,
-        color = ColorItemUIModel(
-            color = NoteColor.fromOrdinal(colorId)
-        ),
-        isDefault = isDefault
-    )
 }

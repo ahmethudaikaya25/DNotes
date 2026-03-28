@@ -1,6 +1,7 @@
 package com.duhapp.dnotes.features.note.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -79,7 +81,7 @@ fun NoteEditorScreenRoute(
         if (showDeleteDialog) {
             ConfirmDialog(
                 title = "Delete Note",
-                body = "Are you sure you want to delete this note?",
+                message = "Are you sure you want to delete this note?",
                 onConfirm = {
                     showDeleteDialog = false
                     viewModel.processIntent(NoteIntent.ConfirmDeleteNote)
@@ -97,14 +99,15 @@ fun NoteScreen(
     state: NoteState,
     onIntent: (NoteIntent) -> Unit
 ) {
-    // We derive dynamic colors from the selected category inside the note payload
-    val noteColorEnum = state.note?.color?.let { NoteColor.fromOrdinal(it) } ?: NoteColor.RED
+    val noteColorEnum = state.note?.colorCode ?: NoteColor.RED
     val (colorDark, colorLight, textColor) = noteColorEnum.toComposeColors()
 
     BaseScreenScaffold(
         showBackButton = true,
         onBackClick = { onIntent(NoteIntent.NavigationBack) },
         title = "Note Editor",
+        containerColor = colorDark,
+        contentColor = textColor,
         topBarActions = {
             // Auto-save indicator
             Icon(
@@ -119,8 +122,7 @@ fun NoteScreen(
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note", tint = textColor)
                 }
             }
-        },
-        modifier = Modifier.background(colorLight)
+        }
     ) { paddingValues ->
         when {
             state.isLoading -> {
@@ -138,12 +140,13 @@ fun NoteScreen(
                 NoteEditorContent(
                     title = state.note.title,
                     body = state.note.body,
-                    textColor = textColor,
                     category = state.note.category,
+                    textColor = textColor,
+                    colorDark = colorDark,
                     onTitleChange = { onIntent(NoteIntent.UpdateTitle(it)) },
                     onBodyChange = { onIntent(NoteIntent.UpdateBody(it)) },
                     onCategoryClick = { onIntent(NoteIntent.ToggleCategorySheet(true)) },
-                    paddingValues = paddingValues
+                    modifier = Modifier.padding(paddingValues)
                 )
             }
         }
@@ -162,24 +165,26 @@ private fun NoteEditorContent(
     title: String,
     body: String,
     textColor: androidx.compose.ui.graphics.Color,
+    colorDark: androidx.compose.ui.graphics.Color,
     category: CategoryUIModel?,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
     onCategoryClick: () -> Unit,
-    paddingValues: PaddingValues
+    modifier: Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(paddingValues)
             .padding(horizontal = 24.dp)
             .imePadding() // Adjust for keyboard
     ) {
         // Category Chip (opens category sheet)
         if (category != null) {
             CategoryChip(
-                icon = category.emoji,
-                label = category.name,
+                emoji = category.emoji,
+                name = category.name,
+                backgroundColor = colorDark,
+                textColor = Color.White,
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .clickable { onCategoryClick() }

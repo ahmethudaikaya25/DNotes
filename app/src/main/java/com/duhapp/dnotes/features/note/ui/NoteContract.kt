@@ -22,6 +22,7 @@ sealed interface NoteIntent : UiIntent {
     data class ChangeCategory(val category: CategoryUIModel) : NoteIntent
     object SaveNote : NoteIntent
     object DeleteNote : NoteIntent
+    object ConfirmDeleteNote : NoteIntent
     object NavigationBack : NoteIntent
     data class ToggleCategorySheet(val isVisible: Boolean) : NoteIntent
 }

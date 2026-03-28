@@ -32,7 +32,7 @@ fun NoteList(
             items = notes,
             key = { note -> note.id }
         ) { note ->
-            val noteColorEnum = NoteColor.fromOrdinal(note.color)
+            val noteColorEnum = note.colorCode
             val (colorDark, colorLight, textColor) = noteColorEnum.toComposeColors()
 
             NoteCard(
