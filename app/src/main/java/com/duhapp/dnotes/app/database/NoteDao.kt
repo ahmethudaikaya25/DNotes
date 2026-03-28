@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
@@ -28,4 +29,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM NoteEntity WHERE title LIKE '%' || :query || '%' OR details LIKE '%' || :query || '%' ORDER BY is_pinned DESC, updated_at DESC")
     suspend fun getNotesByQuery(query: String): List<NoteEntity>
+
+    @Query("SELECT * FROM NoteEntity")
+    fun getAll(): Flow<List<NoteEntity>>
 }

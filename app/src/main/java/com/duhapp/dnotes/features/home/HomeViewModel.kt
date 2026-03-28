@@ -5,9 +5,9 @@ import com.duhapp.dnotes.features.add_or_update_category.domain.FetchHomeData
 import com.duhapp.dnotes.features.base.data.UserPreferencesRepository
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,32 +30,10 @@ class HomeViewModel @Inject constructor(
             applyPresentation()
         }.launchIn(viewModelScope)
 
-        // Automatically load content on init for now
-        processIntent(HomeIntent.LoadContent)
-    }
-
-    override fun processIntent(intent: HomeIntent) {
-        when (intent) {
-            is HomeIntent.LoadContent -> loadCategories()
-            is HomeIntent.OnAddNoteClicked -> emitEffect(HomeEffect.NavigateToNote(null))
-            is HomeIntent.OnNoteClicked -> emitEffect(HomeEffect.NavigateToNote(intent.noteId))
-            is HomeIntent.OnCategoryViewAllClicked -> emitEffect(HomeEffect.NavigateToAllNotes(intent.categoryId))
-            is HomeIntent.OnSortByChanged -> {
-                launch { userPreferencesRepository.updateSortBy(intent.sortBy) }
-            }
-            is HomeIntent.OnGroupByChanged -> {
-                launch { userPreferencesRepository.updateGroupBy(intent.groupBy) }
-            }
-        }
-    }
-
-    private fun loadCategories() {
-        updateState { copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch {
-            try {
-                val categories = fetchHomeData.invoke()
+        fetchHomeData.invoke()
+            .onEach { categories ->
+                rawCategories = categories
                 if (categories.isEmpty()) {
-                    rawCategories = emptyList()
                     updateState {
                         copy(
                             isLoading = false,
@@ -65,16 +43,31 @@ class HomeViewModel @Inject constructor(
                         )
                     }
                 } else {
-                    rawCategories = categories
                     applyPresentation(isLoading = false)
                 }
-            } catch (e: Exception) {
+            }
+            .catch { e ->
                 updateState {
                     copy(
                         isLoading = false,
                         errorMessage = e.message ?: "An error occurred"
                     )
                 }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    override fun processIntent(intent: HomeIntent) {
+        when (intent) {
+            is HomeIntent.LoadContent -> updateState { copy(isLoading = false) }
+            is HomeIntent.OnAddNoteClicked -> emitEffect(HomeEffect.NavigateToNote(null))
+            is HomeIntent.OnNoteClicked -> emitEffect(HomeEffect.NavigateToNote(intent.noteId))
+            is HomeIntent.OnCategoryViewAllClicked -> emitEffect(HomeEffect.NavigateToAllNotes(intent.categoryId))
+            is HomeIntent.OnSortByChanged -> {
+                launch { userPreferencesRepository.updateSortBy(intent.sortBy) }
+            }
+            is HomeIntent.OnGroupByChanged -> {
+                launch { userPreferencesRepository.updateGroupBy(intent.groupBy) }
             }
         }
     }
@@ -99,7 +92,7 @@ class HomeViewModel @Inject constructor(
                 isLoading = isLoading,
                 notes = flatSortedNotes,
                 categories = if (groupBy == GroupBy.CATEGORY) sortedCategories else emptyList(),
-                errorMessage = null
+                errorMessage = if (rawCategories.isEmpty()) "No notes found. Create one!" else null
             )
         }
     }

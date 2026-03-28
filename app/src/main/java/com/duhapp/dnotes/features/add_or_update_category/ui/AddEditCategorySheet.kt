@@ -40,10 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.theme.toPalette
 import com.duhapp.dnotes.foundation.uicomponents.BaseModalSheet
@@ -105,6 +107,7 @@ private fun AddEditCategoryContent(
     val palette = state.category.color.color.toPalette()
     val isSaveEnabled = state.category.name.isNotBlank() &&
         state.category.description.isNotBlank() &&
+        state.hasSelectedEmoji &&
         state.category.emoji.isNotBlank() &&
         !state.isLoading
 
@@ -130,7 +133,11 @@ private fun AddEditCategoryContent(
                 .background(palette.accent)
                 .clickable(onClick = onEmojiClick)
         ) {
-            Text(text = state.category.emoji.ifBlank { "🙂" }, fontSize = 34.sp)
+            Text(
+                text = if (state.category.emoji.isBlank()) "+" else state.category.emoji,
+                fontSize = if (state.category.emoji.isBlank()) 30.sp else 34.sp,
+                color = palette.onAccent
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -304,4 +311,22 @@ private fun EmojiKeyboardDialog(
             }
         }
     }
+}
+
+
+@Preview
+@Composable
+fun AddEditCategorySheetPreview() {
+    AddEditCategorySheet(
+        category = CategoryUIModel(
+            id = 1,
+            name = "Work",
+            description = "Notes related to work and projects",
+            emoji = "💼",
+            color = ColorItemUIModel(false, NoteColor.BLUE)
+        ),
+        showType = CategoryShowType.Add,
+        onDismissRequest = {},
+        onSaved = {}
+    )
 }

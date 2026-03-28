@@ -9,6 +9,7 @@ data class CategoryAddEditState(
     val category: CategoryUIModel = CategoryUIModel(),
     val colors: List<ColorItemUIModel> = emptyList(),
     val showType: CategoryShowType = CategoryShowType.Add,
+    val hasSelectedEmoji: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
 ) : UiState

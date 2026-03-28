@@ -10,21 +10,20 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.duhapp.dnotes.R
+import com.duhapp.dnotes.features.home.components.GroupByToolbar
+import com.duhapp.dnotes.features.home.components.SortByToolbar
 import com.duhapp.dnotes.foundation.mvi.MviScreen
-import com.duhapp.dnotes.foundation.theme.toComposeColors
+import com.duhapp.dnotes.foundation.navigation.Route
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import com.duhapp.dnotes.features.home.components.GroupByToolbar
-import com.duhapp.dnotes.features.home.components.SortByToolbar
-import com.duhapp.dnotes.foundation.navigation.Route
 
 @Composable
 fun HomeScreenRoute(

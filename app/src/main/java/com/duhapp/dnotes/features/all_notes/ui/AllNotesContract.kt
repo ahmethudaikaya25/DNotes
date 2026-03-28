@@ -10,6 +10,7 @@ data class AllNotesState(
     val isLoading: Boolean = false,
     val category: CategoryUIModel? = null,
     val notes: List<BaseNoteUIModel> = emptyList(),
+    val selectedNoteIds: Set<Int> = emptySet(),
     val isSelectionMode: Boolean = false,
     val isMoveSheetVisible: Boolean = false,
     val availableCategories: List<CategoryUIModel> = emptyList(),

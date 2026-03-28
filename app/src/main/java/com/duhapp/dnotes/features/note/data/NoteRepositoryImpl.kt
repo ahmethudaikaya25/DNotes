@@ -13,6 +13,8 @@ import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.toEntity
 import com.duhapp.dnotes.features.home.home_screen_category.ui.toUIModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -117,6 +119,16 @@ class NoteRepositoryImpl @Inject constructor(
                     code = CustomExceptionCode.DATABASE_EXCEPTION.code
                 )
             )
+        }
+    }
+
+    override fun observeAllNotes(): Flow<List<BaseNoteUIModel>> {
+        return combine(categoryDao.getAll(), noteDao.getAll()) { categoryEntities, noteEntities ->
+            val categoriesById = categoryEntities.associateBy { it.id }
+            noteEntities.map { noteEntity ->
+                val category = categoriesById[noteEntity.categoryId]?.toUIModel() ?: CategoryUIModel()
+                noteEntity.toUIModel(category)
+            }
         }
     }
 }

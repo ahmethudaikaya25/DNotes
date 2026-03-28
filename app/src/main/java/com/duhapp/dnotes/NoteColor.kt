@@ -20,7 +20,10 @@ enum class NoteColor(
 
     companion object {
         fun fromOrdinal(ordinal: Int): NoteColor {
-            return entries[ordinal % entries.size]
+            if (ordinal < 0 || ordinal >= entries.size) {
+                return RED
+            }
+            return entries[ordinal]
         }
         
         fun fromResource(@ColorRes colorRes: Int): NoteColor {

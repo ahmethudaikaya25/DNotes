@@ -2,15 +2,16 @@ package com.duhapp.dnotes.features.all_notes.ui
 
 import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.app.database.CategoryDao
-import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
 import com.duhapp.dnotes.features.all_notes.domain.DeleteNote
-import com.duhapp.dnotes.features.all_notes.domain.GetNotesByCategoryId
 import com.duhapp.dnotes.features.all_notes.domain.UpdateNotes
 import com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel
+import com.duhapp.dnotes.features.note.data.NoteRepository
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import timber.log.Timber
@@ -18,12 +19,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AllNotesViewModel @Inject constructor(
-    private val getNotesByCategoryId: GetNotesByCategoryId,
+    private val noteRepository: NoteRepository,
     private val deleteNote: DeleteNote,
     private val updateNotes: UpdateNotes,
     private val categoryDao: CategoryDao,
     private val defaultCategoryModel: CategoryUIModel
 ) : MviViewModel<AllNotesIntent, AllNotesState, AllNotesEffect>(AllNotesState()) {
+    private var observedCategoryId: Int = -1
+    private var notesObserverJob: Job? = null
 
     override fun processIntent(intent: AllNotesIntent) {
         when (intent) {
@@ -39,48 +42,47 @@ class AllNotesViewModel @Inject constructor(
         }
     }
 
-    private fun loadNotes(categoryId: Int) {
-        updateState { copy(isLoading = true, errorMessage = null) }
-        viewModelScope.launch {
-            try {
-                // Fetch categories
-                val availableCategories = categoryDao.getCategories().map { it.toUIModel() }
-
-                val notesById = getNotesByCategoryId.invoke(categoryId)
-                val category = notesById.firstOrNull()?.category ?: defaultCategoryModel
-
-                if (notesById.isEmpty()) {
-                    updateState {
-                        copy(
-                            isLoading = false,
-                            category = category,
-                            notes = emptyList(),
-                            errorMessage = null,
-                            availableCategories = availableCategories
-                        )
-                    }
-                    emitEffect(AllNotesEffect.NavigateBack)
-                    return@launch
+    init {
+        categoryDao.getAll()
+            .onEach { categories ->
+                updateState {
+                    copy(availableCategories = categories.map { it.toUIModel() })
                 }
-                
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadNotes(categoryId: Int) {
+        observedCategoryId = categoryId
+        updateState { copy(isLoading = true, errorMessage = null) }
+
+        notesObserverJob?.cancel()
+        notesObserverJob = noteRepository.observeAllNotes()
+            .onEach { allNotes ->
+                val filteredNotes = allNotes.filter { it.category.id == observedCategoryId }
+                val selectedIds = currentState.selectedNoteIds
+                val category = filteredNotes.firstOrNull()?.category
+                    ?: currentState.availableCategories.firstOrNull { it.id == observedCategoryId }
+                    ?: if (observedCategoryId == defaultCategoryModel.id) defaultCategoryModel else currentState.category
+
                 updateState {
                     copy(
                         isLoading = false,
                         category = category,
-                        notes = notesById,
-                        isSelectionMode = false,
-                        availableCategories = availableCategories
-                    )
-                }
-            } catch (e: Exception) {
-                Timber.e(e)
-                updateState {
-                    copy(
-                        isLoading = false,
-                        errorMessage = "Could not load notes"
+                        notes = filteredNotes.map { note ->
+                            note.newCopy().apply { isSelected = selectedIds.contains(note.id) }
+                        },
+                        isSelectionMode = selectedIds.isNotEmpty(),
+                        errorMessage = null
                     )
                 }
             }
+            .launchIn(viewModelScope)
+    }
+
+    private fun currentSelectedIds(): Set<Int> {
+        return currentState.selectedNoteIds.ifEmpty {
+            currentState.notes.filter { it.isSelected }.map { it.id }.toSet()
         }
     }
 
@@ -100,31 +102,31 @@ class AllNotesViewModel @Inject constructor(
     }
 
     private fun toggleNoteSelection(toggledNote: BaseNoteUIModel) {
-        val updatedNotes = currentState.notes.map {
-            if (it.id == toggledNote.id) {
-                it.newCopy().apply { isSelected = !toggledNote.isSelected }
+        val selectedIds = currentSelectedIds().toMutableSet().apply {
+            if (contains(toggledNote.id)) remove(toggledNote.id) else add(toggledNote.id)
+        }
+        val updatedNotes = currentState.notes.map { note ->
+            if (note.id == toggledNote.id) {
+                note.newCopy().apply { isSelected = selectedIds.contains(note.id) }
             } else {
-                it
+                note.newCopy().apply { isSelected = selectedIds.contains(note.id) }
             }
         }
-        
-        // If no notes are selected, exit selection mode
-        val anySelected = updatedNotes.any { it.isSelected }
+
         updateState {
             copy(
                 notes = updatedNotes,
-                isSelectionMode = anySelected
+                selectedNoteIds = selectedIds,
+                isSelectionMode = selectedIds.isNotEmpty()
             )
         }
     }
 
     private fun cancelSelectionMode() {
-        val mappedNotes = currentState.notes.map {
-            it.newCopy().apply { isSelected = false }
-        }
         updateState {
             copy(
-                notes = mappedNotes,
+                notes = notes.map { it.newCopy().apply { isSelected = false } },
+                selectedNoteIds = emptySet(),
                 isSelectionMode = false
             )
         }
@@ -133,13 +135,11 @@ class AllNotesViewModel @Inject constructor(
     private fun deleteSelectedNotes() {
         viewModelScope.launch {
             try {
-                val selectedNotes = currentState.notes.filter { it.isSelected }
+                val selectedNotes = currentState.notes.filter { currentSelectedIds().contains(it.id) }
                 if (selectedNotes.isEmpty()) return@launch
 
                 deleteNote.invoke(selectedNotes)
-                
-                // Reload notes from the current category
-                currentState.category?.let { loadNotes(it.id) }
+                cancelSelectionMode()
             } catch (e: Exception) {
                 Timber.e(e)
                 emitEffect(AllNotesEffect.ShowToast("Could not delete notes"))
@@ -150,7 +150,7 @@ class AllNotesViewModel @Inject constructor(
     private fun changeCategoryForSelectedNotes(category: CategoryUIModel) {
         viewModelScope.launch {
             try {
-                val selectedNotes = currentState.notes.filter { it.isSelected }
+                val selectedNotes = currentState.notes.filter { currentSelectedIds().contains(it.id) }
                 if (selectedNotes.isEmpty()) return@launch
 
                 selectedNotes.forEach {
@@ -159,10 +159,14 @@ class AllNotesViewModel @Inject constructor(
                 }
                 
                 updateNotes.invoke(selectedNotes)
-                
-                // Reset select mode and reload
-                updateState { copy(isMoveSheetVisible = false, isSelectionMode = false) }
-                loadNotes(currentState.category?.id ?: -1)
+
+                updateState {
+                    copy(
+                        isMoveSheetVisible = false,
+                        isSelectionMode = false,
+                        selectedNoteIds = emptySet()
+                    )
+                }
             } catch (e: Exception) {
                 Timber.e(e)
                 emitEffect(AllNotesEffect.ShowToast("Could not move notes"))

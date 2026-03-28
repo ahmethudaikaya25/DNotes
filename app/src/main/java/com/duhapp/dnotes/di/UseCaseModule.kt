@@ -1,5 +1,7 @@
 package com.duhapp.dnotes.di
 
+import com.duhapp.dnotes.app.database.CategoryDao
+import com.duhapp.dnotes.app.database.NoteDao
 import com.duhapp.dnotes.features.add_or_update_category.data.CategoryRepository
 import com.duhapp.dnotes.features.add_or_update_category.domain.DeleteCategory
 import com.duhapp.dnotes.features.add_or_update_category.domain.FetchHomeData
@@ -56,10 +58,10 @@ object UseCaseModule {
 
     @Provides
     fun provideFetchHomeData(
-        noteRepository: NoteRepository,
-        categoryRepository: CategoryRepository
+        noteDao: NoteDao,
+        categoryDao: CategoryDao
     ): FetchHomeData {
-        return FetchHomeData(noteRepository, categoryRepository)
+        return FetchHomeData(noteDao, categoryDao)
     }
 
     @Provides

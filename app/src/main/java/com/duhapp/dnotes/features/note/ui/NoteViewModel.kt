@@ -4,8 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.app.database.CategoryDao
 import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import com.duhapp.dnotes.features.add_or_update_category.ui.ColorItemUIModel
+import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import com.duhapp.dnotes.features.home.home_screen_category.ui.DEFAULT_NOTE_MODEL
 import com.duhapp.dnotes.features.note.domain.GetDefaultCategory
 import com.duhapp.dnotes.features.note.domain.GetNoteById
@@ -13,6 +13,8 @@ import com.duhapp.dnotes.features.note.domain.UpsertNote
 import com.duhapp.dnotes.app.database.NoteDao
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -25,6 +27,7 @@ class NoteViewModel @Inject constructor(
     private val categoryDao: CategoryDao,
     private val noteDao: NoteDao
 ) : MviViewModel<NoteIntent, NoteState, NoteEffect>(NoteState()) {
+    private var autoSaveJob: Job? = null
 
     override fun processIntent(intent: NoteIntent) {
         when (intent) {
@@ -33,8 +36,11 @@ class NoteViewModel @Inject constructor(
             is NoteIntent.UpdateBody -> updateBody(intent.body)
             is NoteIntent.ChangeCategory -> changeCategory(intent.category)
             is NoteIntent.ToggleCategorySheet -> updateState { copy(isCategorySheetVisible = intent.isVisible) }
-            is NoteIntent.SaveNote -> saveNote(goBack = false)
-            is NoteIntent.NavigationBack -> saveNote(goBack = true)
+            is NoteIntent.SaveNote -> saveNote(goBack = true)
+            is NoteIntent.NavigationBack -> {
+                autoSaveJob?.cancel()
+                saveNote(goBack = true)
+            }
             is NoteIntent.DeleteNote -> {
                 emitEffect(NoteEffect.ShowDeleteConfirmation)
             }
@@ -102,6 +108,7 @@ class NoteViewModel @Inject constructor(
         updateState {
             copy(note = currentNote.newCopy().apply { this.title = title })
         }
+        scheduleAutoSave()
     }
 
     private fun updateBody(body: String) {
@@ -109,6 +116,7 @@ class NoteViewModel @Inject constructor(
         updateState {
             copy(note = currentNote.newCopy().apply { this.body = body })
         }
+        scheduleAutoSave()
     }
 
     private fun changeCategory(category: CategoryUIModel) {
@@ -121,6 +129,15 @@ class NoteViewModel @Inject constructor(
                 },
                 isCategorySheetVisible = false
             )
+        }
+        scheduleAutoSave()
+    }
+
+    private fun scheduleAutoSave() {
+        autoSaveJob?.cancel()
+        autoSaveJob = viewModelScope.launch {
+            delay(600)
+            saveNote(goBack = false)
         }
     }
 

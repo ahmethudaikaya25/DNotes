@@ -20,7 +20,7 @@ data class CategoryUIModel(
         colorId = color.color.ordinal,
         isDefault = isDefault
     ).apply {
-        this.id = this@CategoryUIModel.id
+        this.id = if (this@CategoryUIModel.id > 0) this@CategoryUIModel.id else 0
     }
 }
 

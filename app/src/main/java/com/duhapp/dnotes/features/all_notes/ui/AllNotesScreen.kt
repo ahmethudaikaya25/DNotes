@@ -142,6 +142,8 @@ fun AllNotesScreen(
                         NoteCard(
                             title = note.title,
                             body = note.body,
+                            categoryEmoji = note.category.emoji,
+                            categoryName = note.category.name,
                             colorDark = colorDark,
                             colorLight = colorLight,
                             textColor = textColor,

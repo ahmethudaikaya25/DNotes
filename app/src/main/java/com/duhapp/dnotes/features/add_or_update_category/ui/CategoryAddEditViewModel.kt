@@ -32,6 +32,7 @@ class CategoryAddEditViewModel @Inject constructor(
                     copy(
                         category = category,
                         showType = intent.showType,
+                        hasSelectedEmoji = category.emoji.isNotBlank(),
                         colors = colors.map { it.copy(isSelected = it.color == category.color.color) }
                     )
                 }
@@ -43,7 +44,12 @@ class CategoryAddEditViewModel @Inject constructor(
                 updateState { copy(category = category.copy(description = intent.description)) }
             }
             is CategoryAddEditIntent.UpdateEmoji -> {
-                updateState { copy(category = category.copy(emoji = intent.emoji)) }
+                updateState {
+                    copy(
+                        category = category.copy(emoji = intent.emoji),
+                        hasSelectedEmoji = intent.emoji.isNotBlank()
+                    )
+                }
             }
             is CategoryAddEditIntent.SelectColor -> {
                 updateState { 
@@ -62,6 +68,7 @@ class CategoryAddEditViewModel @Inject constructor(
         if (
             currentState.category.name.isBlank() ||
             currentState.category.description.isBlank() ||
+            !currentState.hasSelectedEmoji ||
             currentState.category.emoji.isBlank()
         ) {
             emitEffect(CategoryAddEditEffect.ShowError("Fill category name, description and emoji"))

@@ -1,7 +1,6 @@
 package com.duhapp.dnotes.features.note.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,10 +9,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -101,14 +97,7 @@ fun NoteScreen(
         containerColor = palette.container,
         contentColor = palette.onContainer,
         topBarActions = {
-            Icon(
-                imageVector = Icons.Default.CheckCircle,
-                contentDescription = "Saved",
-                tint = palette.onContainer.copy(alpha = 0.6f),
-                modifier = Modifier.padding(end = 8.dp)
-            )
-
-            if (state.note != null) {
+            if (state.note?.id != -1) {
                 IconButton(onClick = { onIntent(NoteIntent.DeleteNote) }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -170,7 +159,7 @@ private fun NoteEditorContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 8.dp)
             .imePadding()
     ) {
         if (category != null) {
@@ -196,7 +185,7 @@ private fun NoteEditorContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 8.dp),
+                .padding(top = 18.dp, bottom = 10.dp),
             cursorBrush = SolidColor(textColor),
             decorationBox = { innerTextField ->
                 Box {
@@ -227,7 +216,7 @@ private fun NoteEditorContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .padding(top = 8.dp),
+                .padding(top = 10.dp, bottom = 12.dp),
             cursorBrush = SolidColor(textColor),
             decorationBox = { innerTextField ->
                 Box {
@@ -244,22 +233,5 @@ private fun NoteEditorContent(
                 }
             }
         )
-
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            IconButton(onClick = { }) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Bold", tint = textColor)
-            }
-            IconButton(onClick = { }) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Italic", tint = textColor)
-            }
-            IconButton(onClick = { }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "List", tint = textColor)
-            }
-        }
     }
 }
