@@ -48,6 +48,20 @@ class AllNotesViewModel @Inject constructor(
 
                 val notesById = getNotesByCategoryId.invoke(categoryId)
                 val category = notesById.firstOrNull()?.category ?: defaultCategoryModel
+
+                if (notesById.isEmpty()) {
+                    updateState {
+                        copy(
+                            isLoading = false,
+                            category = category,
+                            notes = emptyList(),
+                            errorMessage = null,
+                            availableCategories = availableCategories
+                        )
+                    }
+                    emitEffect(AllNotesEffect.NavigateBack)
+                    return@launch
+                }
                 
                 updateState {
                     copy(
