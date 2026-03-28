@@ -1,5 +1,6 @@
 package com.duhapp.dnotes.foundation.uicomponents
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -24,12 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.duhapp.dnotes.foundation.theme.toComposeColors
+import com.duhapp.dnotes.NoteColor
+import com.duhapp.dnotes.foundation.theme.toPalette
 
 @Composable
 fun CategoryCard(
@@ -37,16 +39,18 @@ fun CategoryCard(
     emoji: String,
     description: String,
     colorOrdinal: Int,
+    isDefault: Boolean = false,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val (colorDark, colorLight, textColor) = com.duhapp.dnotes.NoteColor.fromOrdinal(colorOrdinal).toComposeColors()
+    val palette = NoteColor.fromOrdinal(colorOrdinal).toPalette()
 
     Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = colorLight,
+        shape = RoundedCornerShape(18.dp),
+        color = palette.container,
+        border = BorderStroke(1.dp, palette.outline),
         modifier = modifier
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.6f)
@@ -54,15 +58,20 @@ fun CategoryCard(
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(palette.container, palette.container.copy(alpha = 0.94f))
+                    )
+                )
+                .padding(16.dp)
         ) {
-            // Emoji Circle
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(colorDark)
+                    .background(palette.accent)
             ) {
                 Text(text = emoji, fontSize = 24.sp)
             }
@@ -74,7 +83,7 @@ fun CategoryCard(
                     text = name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = textColor,
+                    color = palette.onContainer,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -82,7 +91,7 @@ fun CategoryCard(
                     Text(
                         text = description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = textColor.copy(alpha = 0.7f),
+                        color = palette.onContainer.copy(alpha = 0.72f),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -91,12 +100,12 @@ fun CategoryCard(
 
             IconButton(
                 onClick = onDeleteClick,
-                enabled = enabled
+                enabled = enabled && !isDefault
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete Category",
-                    tint = textColor.copy(alpha = 0.6f)
+                    tint = palette.onContainer.copy(alpha = 0.58f)
                 )
             }
         }

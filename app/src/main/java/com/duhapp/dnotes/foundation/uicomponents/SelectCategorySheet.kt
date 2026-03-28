@@ -20,12 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
-import com.duhapp.dnotes.foundation.theme.toComposeColors
-import com.duhapp.dnotes.foundation.uicomponents.BaseModalSheet
+import com.duhapp.dnotes.foundation.theme.toPalette
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,23 +76,25 @@ private fun CategoryListItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val (colorDark) = category.color.color.toComposeColors()
+    val palette = category.color.color.toPalette()
 
     Surface(
-        color = Color.Transparent,
+        color = palette.container,
+        shape = MaterialTheme.shapes.medium,
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 6.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp)
         ) {
-            // Emulated emoji circle for category pick
             Surface(
-                shape = MaterialTheme.shapes.small,
-                color = colorDark,
+                shape = MaterialTheme.shapes.medium,
+                color = palette.accent,
                 modifier = Modifier.size(40.dp)
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
@@ -106,13 +106,14 @@ private fun CategoryListItem(
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = palette.onContainer
                 )
                 if (category.description.isNotBlank()) {
                     Text(
                         text = category.description,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = palette.onContainer.copy(alpha = 0.72f)
                     )
                 }
             }

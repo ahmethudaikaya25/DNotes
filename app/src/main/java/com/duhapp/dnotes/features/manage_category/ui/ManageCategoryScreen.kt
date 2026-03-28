@@ -173,6 +173,7 @@ fun ManageCategoryScreen(
                             emoji = category.emoji,
                             description = category.description,
                             colorOrdinal = category.color?.color?.ordinal ?: 0,
+                            isDefault = category.isDefault,
                             onClick = { if (isInteractionEnabled) onIntent(ManageCategoryIntent.OnCategoryClick(category)) },
                             onDeleteClick = { if (isInteractionEnabled) onDeleteRequest(category) },
                             enabled = isInteractionEnabled

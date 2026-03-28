@@ -91,7 +91,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun DNotesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,      // set to false to always use brand palette
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {

@@ -54,6 +54,7 @@ class NoteViewModel @Inject constructor(
                     val defaultCategory = getDefaultCategory.invoke()
                     val newNote = DEFAULT_NOTE_MODEL.newCopy().apply {
                         category = defaultCategory
+                        colorCode = defaultCategory.color.color
                     }
                     updateState {
                         copy(

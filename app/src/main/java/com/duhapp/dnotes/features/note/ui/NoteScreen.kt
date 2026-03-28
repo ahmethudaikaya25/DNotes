@@ -1,23 +1,20 @@
 package com.duhapp.dnotes.features.note.ui
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +26,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -39,7 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.foundation.mvi.MviScreen
-import com.duhapp.dnotes.foundation.theme.toComposeColors
+import com.duhapp.dnotes.foundation.theme.toPalette
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.CategoryChip
 import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
@@ -64,12 +60,8 @@ fun NoteEditorScreenRoute(
         onEffect = { effect ->
             when (effect) {
                 is NoteEffect.NavigateBack -> onNavigateBack()
-                is NoteEffect.ShowDeleteConfirmation -> {
-                    showDeleteDialog = true
-                }
-                is NoteEffect.ShowToast -> {
-                    // Typically show a real toast or snackbar
-                }
+                is NoteEffect.ShowDeleteConfirmation -> showDeleteDialog = true
+                is NoteEffect.ShowToast -> Unit
             }
         }
     ) { state ->
@@ -77,7 +69,7 @@ fun NoteEditorScreenRoute(
             state = state,
             onIntent = viewModel::processIntent
         )
-        
+
         if (showDeleteDialog) {
             ConfirmDialog(
                 title = "Delete Note",
@@ -100,34 +92,35 @@ fun NoteScreen(
     onIntent: (NoteIntent) -> Unit
 ) {
     val noteColorEnum = state.note?.colorCode ?: NoteColor.RED
-    val (colorDark, colorLight, textColor) = noteColorEnum.toComposeColors()
+    val palette = noteColorEnum.toPalette()
 
     BaseScreenScaffold(
         showBackButton = true,
         onBackClick = { onIntent(NoteIntent.NavigationBack) },
         title = "Note Editor",
-        containerColor = colorDark,
-        contentColor = textColor,
+        containerColor = palette.container,
+        contentColor = palette.onContainer,
         topBarActions = {
-            // Auto-save indicator
             Icon(
                 imageVector = Icons.Default.CheckCircle,
                 contentDescription = "Saved",
-                tint = textColor.copy(alpha = 0.6f),
+                tint = palette.onContainer.copy(alpha = 0.6f),
                 modifier = Modifier.padding(end = 8.dp)
             )
-            
+
             if (state.note != null) {
                 IconButton(onClick = { onIntent(NoteIntent.DeleteNote) }) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Note", tint = textColor)
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Note",
+                        tint = palette.onContainer
+                    )
                 }
             }
         }
     ) { paddingValues ->
         when {
-            state.isLoading -> {
-                LoadingScreen(modifier = Modifier.padding(paddingValues))
-            }
+            state.isLoading -> LoadingScreen(modifier = Modifier.padding(paddingValues))
             state.errorMessage != null -> {
                 EmptyStateView(
                     title = "Error",
@@ -141,8 +134,9 @@ fun NoteScreen(
                     title = state.note.title,
                     body = state.note.body,
                     category = state.note.category,
-                    textColor = textColor,
-                    colorDark = colorDark,
+                    textColor = palette.onContainer,
+                    categoryAccentColor = palette.accent,
+                    categoryAccentContentColor = palette.onAccent,
                     onTitleChange = { onIntent(NoteIntent.UpdateTitle(it)) },
                     onBodyChange = { onIntent(NoteIntent.UpdateBody(it)) },
                     onCategoryClick = { onIntent(NoteIntent.ToggleCategorySheet(true)) },
@@ -150,7 +144,7 @@ fun NoteScreen(
                 )
             }
         }
-        
+
         SelectCategorySheet(
             isVisible = state.isCategorySheetVisible,
             categories = state.availableCategories,
@@ -165,7 +159,8 @@ private fun NoteEditorContent(
     title: String,
     body: String,
     textColor: androidx.compose.ui.graphics.Color,
-    colorDark: androidx.compose.ui.graphics.Color,
+    categoryAccentColor: androidx.compose.ui.graphics.Color,
+    categoryAccentContentColor: androidx.compose.ui.graphics.Color,
     category: CategoryUIModel?,
     onTitleChange: (String) -> Unit,
     onBodyChange: (String) -> Unit,
@@ -176,22 +171,20 @@ private fun NoteEditorContent(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
-            .imePadding() // Adjust for keyboard
+            .imePadding()
     ) {
-        // Category Chip (opens category sheet)
         if (category != null) {
             CategoryChip(
                 emoji = category.emoji,
                 name = category.name,
-                backgroundColor = colorDark,
-                textColor = Color.White,
+                backgroundColor = categoryAccentColor,
+                textColor = categoryAccentContentColor,
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .clickable { onCategoryClick() }
             )
         }
 
-        // Title Input
         BasicTextField(
             value = title,
             onValueChange = onTitleChange,
@@ -222,7 +215,6 @@ private fun NoteEditorContent(
             }
         )
 
-        // Body Input
         BasicTextField(
             value = body,
             onValueChange = onBodyChange,
@@ -234,7 +226,7 @@ private fun NoteEditorContent(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f) // Fill remaining space above toolbar
+                .weight(1f)
                 .padding(top = 8.dp),
             cursorBrush = SolidColor(textColor),
             decorationBox = { innerTextField ->
@@ -252,21 +244,20 @@ private fun NoteEditorContent(
                 }
             }
         )
-        
-        // Formatting Toolbar (Placeholder)
+
         androidx.compose.foundation.layout.Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            IconButton(onClick = { /* Placeholder for Bold */ }) {
+            IconButton(onClick = { }) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = "Bold", tint = textColor)
             }
-            IconButton(onClick = { /* Placeholder for Italic */ }) {
+            IconButton(onClick = { }) {
                 Icon(imageVector = Icons.Default.Edit, contentDescription = "Italic", tint = textColor)
             }
-            IconButton(onClick = { /* Placeholder for Bullet List */ }) {
+            IconButton(onClick = { }) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.List, contentDescription = "List", tint = textColor)
             }
         }

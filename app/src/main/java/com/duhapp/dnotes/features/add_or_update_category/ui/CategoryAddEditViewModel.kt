@@ -24,7 +24,10 @@ class CategoryAddEditViewModel @Inject constructor(
     override fun processIntent(intent: CategoryAddEditIntent) {
         when (intent) {
             is CategoryAddEditIntent.Init -> {
-                val category = intent.category ?: CategoryUIModel()
+                val category = intent.category ?: CategoryUIModel(
+                    id = -1,
+                    color = ColorItemUIModel(color = NoteColor.BLUE)
+                )
                 updateState { 
                     copy(
                         category = category,
@@ -56,8 +59,12 @@ class CategoryAddEditViewModel @Inject constructor(
     }
 
     private fun saveCategory() {
-        if (currentState.category.name.isBlank()) {
-            emitEffect(CategoryAddEditEffect.ShowError("Name cannot be empty"))
+        if (
+            currentState.category.name.isBlank() ||
+            currentState.category.description.isBlank() ||
+            currentState.category.emoji.isBlank()
+        ) {
+            emitEffect(CategoryAddEditEffect.ShowError("Fill category name, description and emoji"))
             return
         }
         

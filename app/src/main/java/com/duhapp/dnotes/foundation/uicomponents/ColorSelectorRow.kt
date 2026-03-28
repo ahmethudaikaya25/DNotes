@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -23,23 +22,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.duhapp.dnotes.NoteColor
+import com.duhapp.dnotes.foundation.theme.toPalette
 
-/**
- * A horizontal scrollable row of selectable colors.
- * Used for choosing a category or note color.
- *
- * @param colors The list of available colors to choose from.
- * @param selectedColor The currently selected color.
- * @param onColorSelected Callback triggered when a color is tapped.
- * @param modifier Modifier for styling or layout.
- */
 @Composable
 fun ColorSelectorRow(
-    colors: List<Color>,
-    selectedColor: Color?,
-    onColorSelected: (Color) -> Unit,
+    colors: List<NoteColor>,
+    selectedColor: NoteColor,
+    onColorSelected: (NoteColor) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyRow(
@@ -59,21 +50,23 @@ fun ColorSelectorRow(
 
 @Composable
 private fun ColorItem(
-    color: Color,
+    color: NoteColor,
     isSelected: Boolean,
     onClick: () -> Unit,
 ) {
+    val palette = color.toPalette()
+
     Box(
         modifier = Modifier
             .size(48.dp)
             .clip(CircleShape)
-            .background(color)
+            .background(palette.accent)
             .clickable(onClick = onClick)
             .then(
                 if (isSelected) {
-                    Modifier.border(2.dp, Color.Black.copy(alpha = 0.5f), CircleShape)
+                    Modifier.border(3.dp, palette.onAccent.copy(alpha = 0.84f), CircleShape)
                 } else {
-                    Modifier
+                    Modifier.border(1.dp, palette.outline, CircleShape)
                 }
             ),
         contentAlignment = Alignment.Center
@@ -83,16 +76,11 @@ private fun ColorItem(
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut()
         ) {
-            // High contrast checkmark inside the selected color circle
             Icon(
                 imageVector = Icons.Filled.Check,
                 contentDescription = "Selected Color",
-                tint = Color.White,
-                modifier = Modifier
-                    .size(24.dp)
-                    // Optional: add a subtle drop shadow to the icon for better visibility 
-                    // on light colors, but since in DNotes the base colors are dark variants
-                    // white works reasonably well here.
+                tint = palette.onAccent,
+                modifier = Modifier.size(24.dp)
             )
         }
     }
