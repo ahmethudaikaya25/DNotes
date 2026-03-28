@@ -68,7 +68,7 @@ class CategoryAddEditViewModel @Inject constructor(
         if (
             currentState.category.name.isBlank() ||
             currentState.category.description.isBlank() ||
-            !currentState.hasSelectedEmoji ||
+            (currentState.showType == CategoryShowType.Add && !currentState.hasSelectedEmoji) ||
             currentState.category.emoji.isBlank()
         ) {
             emitEffect(CategoryAddEditEffect.ShowError("Fill category name, description and emoji"))

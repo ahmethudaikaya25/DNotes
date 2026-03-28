@@ -107,7 +107,7 @@ private fun AddEditCategoryContent(
     val palette = state.category.color.color.toPalette()
     val isSaveEnabled = state.category.name.isNotBlank() &&
         state.category.description.isNotBlank() &&
-        state.hasSelectedEmoji &&
+        (state.showType == CategoryShowType.Edit || state.hasSelectedEmoji) &&
         state.category.emoji.isNotBlank() &&
         !state.isLoading
 
