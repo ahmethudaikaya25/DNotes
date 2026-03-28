@@ -12,7 +12,12 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -20,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import com.duhapp.dnotes.features.add_or_update_category.ui.AddEditCategorySheet
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
@@ -39,6 +45,8 @@ fun ManageCategoryScreenRoute(
     var categoryBeingEdited by remember { mutableStateOf<CategoryUIModel?>(null) }
     var showType by remember { mutableStateOf(CategoryShowType.Add) }
     var showEditSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     MviScreen(
         viewModel = viewModel,
@@ -51,19 +59,35 @@ fun ManageCategoryScreenRoute(
                     showEditSheet = true
                 }
                 is ManageCategoryEffect.ShowDeleteSuccess -> {
-                    // Show snackbar or similar in Story 5.3
+                    coroutineScope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Category '${effect.categoryName}' deleted",
+                            actionLabel = "Undo",
+                            withDismissAction = true,
+                            duration = SnackbarDuration.Short
+                        )
+                        if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                            viewModel.processIntent(ManageCategoryIntent.OnUndoDelete)
+                        }
+                    }
                 }
                 is ManageCategoryEffect.ShowError -> {
-                    // Show toast/dialog
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(effect.message)
+                    }
                 }
             }
         }
     ) { state ->
-        ManageCategoryScreen(
-            state = state,
-            onIntent = viewModel::processIntent,
-            onDeleteRequest = { categoryToDelete = it }
-        )
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        ) { _ ->
+            ManageCategoryScreen(
+                state = state,
+                onIntent = viewModel::processIntent,
+                onDeleteRequest = { categoryToDelete = it }
+            )
+        }
 
         if (showEditSheet) {
             AddEditCategorySheet(
@@ -101,8 +125,7 @@ fun ManageCategoryScreen(
 ) {
     BaseScreenScaffold(
         title = "Manage Categories",
-        showBackButton = true,
-        onBackClick = { onIntent(ManageCategoryIntent.NavigationBack) },
+        showBackButton = false,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onIntent(ManageCategoryIntent.OnAddCategoryClick) },
