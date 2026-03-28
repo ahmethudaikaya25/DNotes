@@ -8,7 +8,6 @@ import com.duhapp.dnotes.features.manage_category.domain.UndoCategory
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import com.duhapp.dnotes.features.add_or_update_category.ui.toUIModel
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,6 +29,7 @@ class ManageCategoryViewModel @Inject constructor(
                 emitEffect(ManageCategoryEffect.ShowAddEditCategorySheet(intent.category))
             }
             is ManageCategoryIntent.OnDeleteCategory -> handleDeleteCategory(intent.category)
+            is ManageCategoryIntent.OnUndoDelete -> handleUndoDelete()
             is ManageCategoryIntent.OnAddCategoryClick -> {
                 emitEffect(ManageCategoryEffect.ShowAddEditCategorySheet(null))
             }
@@ -56,11 +56,23 @@ class ManageCategoryViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 deleteCategory.invoke(category)
-                emitEffect(ManageCategoryEffect.ShowDeleteSuccess)
+                emitEffect(ManageCategoryEffect.ShowDeleteSuccess(category.name))
                 loadCategories()
             } catch (e: Exception) {
                 Timber.e(e, "Failed to delete category")
                 emitEffect(ManageCategoryEffect.ShowError("Failed to delete category"))
+            }
+        }
+    }
+
+    private fun handleUndoDelete() {
+        viewModelScope.launch {
+            try {
+                undoCategory.invoke()
+                loadCategories()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to undo category deletion")
+                emitEffect(ManageCategoryEffect.ShowError("Undo failed"))
             }
         }
     }

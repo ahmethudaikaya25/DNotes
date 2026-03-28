@@ -15,6 +15,7 @@ sealed interface ManageCategoryIntent : UiIntent {
     object LoadCategories : ManageCategoryIntent
     data class OnCategoryClick(val category: CategoryUIModel) : ManageCategoryIntent
     data class OnDeleteCategory(val category: CategoryUIModel) : ManageCategoryIntent
+    object OnUndoDelete : ManageCategoryIntent
     object OnAddCategoryClick : ManageCategoryIntent
     object NavigationBack : ManageCategoryIntent
 }
@@ -22,6 +23,6 @@ sealed interface ManageCategoryIntent : UiIntent {
 sealed interface ManageCategoryEffect : UiEffect {
     object NavigateBack : ManageCategoryEffect
     data class ShowAddEditCategorySheet(val category: CategoryUIModel? = null) : ManageCategoryEffect
-    object ShowDeleteSuccess : ManageCategoryEffect
+    data class ShowDeleteSuccess(val categoryName: String) : ManageCategoryEffect
     data class ShowError(val message: String) : ManageCategoryEffect
 }

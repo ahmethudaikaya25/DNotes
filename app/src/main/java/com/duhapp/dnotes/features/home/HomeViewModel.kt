@@ -16,14 +16,18 @@ class HomeViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository
 ) : MviViewModel<HomeIntent, HomeState, HomeEffect>(HomeState()) {
 
+    private var rawCategories = emptyList<com.duhapp.dnotes.features.home.home_screen_category.ui.HomeCategoryUIModel>()
+
     init {
         // Observe DataStore preferences
         userPreferencesRepository.sortByFlow.onEach { sortBy ->
             updateState { copy(sortBy = sortBy) }
+            applyPresentation()
         }.launchIn(viewModelScope)
 
         userPreferencesRepository.groupByFlow.onEach { groupBy ->
             updateState { copy(groupBy = groupBy) }
+            applyPresentation()
         }.launchIn(viewModelScope)
 
         // Automatically load content on init for now
@@ -51,21 +55,18 @@ class HomeViewModel @Inject constructor(
             try {
                 val categories = fetchHomeData.invoke()
                 if (categories.isEmpty()) {
+                    rawCategories = emptyList()
                     updateState {
                         copy(
                             isLoading = false,
+                            notes = emptyList(),
                             categories = emptyList(),
                             errorMessage = "No notes found. Create one!"
                         )
                     }
                 } else {
-                    updateState {
-                        copy(
-                            isLoading = false,
-                            categories = categories,
-                            errorMessage = null
-                        )
-                    }
+                    rawCategories = categories
+                    applyPresentation(isLoading = false)
                 }
             } catch (e: Exception) {
                 updateState {
@@ -75,6 +76,43 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    private fun applyPresentation(isLoading: Boolean = false) {
+        val sortBy = currentState.sortBy
+        val groupBy = currentState.groupBy
+
+        val sortedCategories = rawCategories
+            .map { category ->
+                category.copy(noteList = sortNotes(category.noteList, sortBy))
+            }
+            .sortedBy { it.title.lowercase() }
+
+        val flatSortedNotes = sortNotes(
+            rawCategories.flatMap { it.noteList },
+            sortBy
+        )
+
+        updateState {
+            copy(
+                isLoading = isLoading,
+                notes = flatSortedNotes,
+                categories = if (groupBy == GroupBy.CATEGORY) sortedCategories else emptyList(),
+                errorMessage = null
+            )
+        }
+    }
+
+    private fun sortNotes(
+        notes: List<com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel>,
+        sortBy: SortBy
+    ): List<com.duhapp.dnotes.features.home.home_screen_category.ui.BaseNoteUIModel> {
+        return when (sortBy) {
+            SortBy.DATE_ADDED -> notes.sortedByDescending { it.id }
+            SortBy.DATE_MODIFIED -> notes.sortedByDescending { it.id }
+            SortBy.TITLE -> notes.sortedBy { it.title.lowercase() }
+            SortBy.COLOR -> notes.sortedBy { it.colorCode.ordinal }
         }
     }
 }
