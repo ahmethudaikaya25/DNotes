@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -44,9 +45,9 @@ fun ImportScreenRoute(
         onEffect = { effect ->
             when (effect) {
                 is ImportEffect.NavigateBack -> onNavigateBack()
-                is ImportEffect.TriggerFilePicker -> launcher.launch(arrayOf("application/octet-stream"))
-                is ImportEffect.ShowError -> { /* Handle Error Toast */ }
-                is ImportEffect.ShowSuccess -> { /* Handle Success Toast */ }
+                // Providers report backup files under a range of mime types, so accept any
+                // file and let the parser decide whether it is a DNotes backup.
+                is ImportEffect.TriggerFilePicker -> launcher.launch(arrayOf("*/*"))
             }
         }
     ) { state ->
@@ -76,43 +77,88 @@ fun ImportScreen(
                     .padding(paddingValues)
                     .padding(24.dp)
             ) {
-                Text(
-                    text = "Decrypt Backup",
-                    style = MaterialTheme.typography.titleLarge
-                )
-                Text(
-                    text = "Please enter the password used at export to decrypt your backup file.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
+                if (state.requiresPassword) {
+                    Text(
+                        text = "Decrypt Backup",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = "This backup is password protected. Enter the password that was used when it was exported.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                } else {
+                    Text(
+                        text = "Restore Backup",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = "Pick a DNotes backup file. Password protected files ask for their password, others are restored right away. Notes you already have are skipped.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (state.fileName != null) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = state.fileName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                OutlinedTextField(
-                    value = state.password,
-                    onValueChange = { onIntent(ImportIntent.UpdatePassword(it)) },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { onIntent(ImportIntent.TogglePasswordVisibility) }) {
-                            Icon(
-                                imageVector = if (state.isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = "Toggle Visibility"
-                            )
+                if (state.requiresPassword) {
+                    OutlinedTextField(
+                        value = state.password,
+                        onValueChange = { onIntent(ImportIntent.UpdatePassword(it)) },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = if (state.isPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { onIntent(ImportIntent.TogglePasswordVisibility) }) {
+                                Icon(
+                                    imageVector = if (state.isPasswordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = "Toggle Visibility"
+                                )
+                            }
                         }
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = { onIntent(ImportIntent.ConfirmImport) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = state.password.isNotEmpty()
+                    ) {
+                        Text(text = "Decrypt & Import")
                     }
-                )
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { onIntent(ImportIntent.StartImport) },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = state.password.length >= 4
-                ) {
-                    Text(text = "Select File & Import")
+                    TextButton(
+                        onClick = { onIntent(ImportIntent.CancelPasswordEntry) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Choose another file")
+                    }
+                } else {
+                    Button(
+                        onClick = { onIntent(ImportIntent.StartImport) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(text = "Select File & Import")
+                    }
                 }
 
                 if (state.errorMessage != null) {

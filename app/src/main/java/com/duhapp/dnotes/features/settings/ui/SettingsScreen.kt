@@ -89,13 +89,13 @@ fun SettingsScreen(
 
             SyncItem(
                 title = "Export Portfolio",
-                description = "Export your notes to an encrypted file.",
+                description = "Save your notes to a file, with or without a password.",
                 icon = Icons.Default.Download,
                 onClick = { onIntent(SettingsIntent.OnExportClick) }
             )
             SyncItem(
                 title = "Import Portfolio",
-                description = "Import your notes from an encrypted file.",
+                description = "Restore your notes from a backup file.",
                 icon = Icons.Default.Upload,
                 onClick = { onIntent(SettingsIntent.OnImportClick) }
             )

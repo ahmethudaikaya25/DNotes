@@ -3,11 +3,13 @@ package com.duhapp.dnotes.features.settings.ui
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -16,8 +18,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -33,7 +37,7 @@ fun ExportScreenRoute(
     viewModel: ExportViewModel = hiltViewModel()
 ) {
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/octet-stream"),
+        contract = ActivityResultContracts.CreateDocument("application/json"),
         onResult = { uri ->
             uri?.let { viewModel.processIntent(ExportIntent.OnExportFileSelected(it.toString())) }
         }
@@ -44,9 +48,7 @@ fun ExportScreenRoute(
         onEffect = { effect ->
             when (effect) {
                 is ExportEffect.NavigateBack -> onNavigateBack()
-                is ExportEffect.TriggerFilePicker -> launcher.launch("dnotes_backup.dn")
-                is ExportEffect.ShowSuccess -> { /* Snackbar success */ }
-                is ExportEffect.ShowError -> { /* Snackbar error */ }
+                is ExportEffect.TriggerFilePicker -> launcher.launch(effect.suggestedFileName)
             }
         }
     ) { state ->
@@ -77,40 +79,78 @@ fun ExportScreen(
                     .padding(24.dp)
             ) {
                 Text(
-                    text = "Security Password",
+                    text = "Backup File",
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "This password will be used to encrypt your portfolio. You MUST remember it to import your data later.",
+                    text = "All of your categories and notes are written into a single file you can store anywhere.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                OutlinedTextField(
-                    value = state.password,
-                    onValueChange = { onIntent(ExportIntent.UpdatePassword(it)) },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    visualTransformation = if (state.isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { onIntent(ExportIntent.TogglePasswordVisibility) }) {
-                            Icon(
-                                imageVector = if (state.isPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = "Toggle Visibility"
-                            )
-                        }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Protect with a password",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = if (state.isEncryptionEnabled) {
+                                "The file is encrypted and the same password is needed to import it."
+                            } else {
+                                "The file stays readable and can be imported without a password."
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Switch(
+                        checked = state.isEncryptionEnabled,
+                        onCheckedChange = { onIntent(ExportIntent.ToggleEncryption(it)) }
+                    )
+                }
+
+                if (state.isEncryptionEnabled) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = state.password,
+                        onValueChange = { onIntent(ExportIntent.UpdatePassword(it)) },
+                        label = { Text("Password") },
+                        supportingText = {
+                            Text("At least ${ExportState.MIN_PASSWORD_LENGTH} characters. It cannot be recovered.")
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        visualTransformation = if (state.isPasswordVisible) {
+                            VisualTransformation.None
+                        } else {
+                            PasswordVisualTransformation()
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { onIntent(ExportIntent.TogglePasswordVisibility) }) {
+                                Icon(
+                                    imageVector = if (state.isPasswordVisible) {
+                                        Icons.Default.VisibilityOff
+                                    } else {
+                                        Icons.Default.Visibility
+                                    },
+                                    contentDescription = "Toggle Visibility"
+                                )
+                            }
+                        }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = { onIntent(ExportIntent.StartExport) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = state.password.length >= 4
+                    enabled = state.canExport
                 ) {
                     Text(text = "Choose Path & Export")
                 }
