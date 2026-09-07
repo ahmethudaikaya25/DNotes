@@ -139,7 +139,7 @@ class ImportViewModel @Inject constructor(
             Timber.e(e, "Import failed")
             updateState { copy(isLoading = false, errorMessage = "Import failed. Please try again.") }
         } finally {
-            password?.fill(' ')
+            password?.fill(Char(0))
         }
     }
 
