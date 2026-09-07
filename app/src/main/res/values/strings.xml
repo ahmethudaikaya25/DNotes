@@ -33,7 +33,7 @@
     <string name="select_a_category_for_edit">Select A Category For Edit</string>
     <string name="default_category_name" >This category is default category</string>
     <string name="default_category_emoji">😀</string>
-    <string name="default_category_description" >You can edit but can\'t delete.</string>
+    <string name="default_category_description" >New notes land here by default.</string>
     <string name="default_title_all_notes">Category</string>
     <string name="An_error_occurred_please_try_again_later">An error occurred. Please try again later</string>
     <string name="Data_Not_Found">Data can\'t found</string>
@@ -67,6 +67,9 @@
     <string name="Category_Id_Cannot_Be_Minus_Val">Category Id can\'t be minus value</string>
     <string name="Error_While_Undoing_Category_Deletion">Error occurred while undo category deletion</string>
     <string name="Default_Category_Could_Not_Be_Deleted">Default category could not be deleted</string>
+    <string name="Last_Category_Could_Not_Be_Deleted">The last remaining category cannot be deleted</string>
+    <string name="New_Default_Category_Must_Be_Selected">Choose a new default category before deleting this one</string>
+    <string name="Category_Could_Not_Be_Found">Category could not be found</string>
     <string name="Category_Deleting_Error">Category Deleting Error</string>
     <string name="Notes_Could_Not_Be_Empty">Notes could not be empty</string>
     <string name="Error_Note_Info_Is_Empty">Note must have at least title or description</string>

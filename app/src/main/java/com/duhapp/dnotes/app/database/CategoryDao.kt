@@ -33,4 +33,13 @@ interface CategoryDao {
 
     @Query("SELECT * FROM CategoryEntity WHERE id = :id")
     suspend fun getById(id: Int): CategoryEntity?
+
+    @Query("SELECT * FROM CategoryEntity WHERE is_default = 1 ORDER BY sort_order ASC, id ASC LIMIT 1")
+    suspend fun getDefaultCategory(): CategoryEntity?
+
+    @Query("UPDATE CategoryEntity SET is_default = 0 WHERE id != :id")
+    suspend fun clearDefaultExcept(id: Int)
+
+    @Query("UPDATE CategoryEntity SET is_default = 1 WHERE id = :id")
+    suspend fun markAsDefault(id: Int)
 }

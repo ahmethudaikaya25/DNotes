@@ -47,8 +47,12 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideCategoryRepository(categoryDao: CategoryDao, noteDao: NoteDao): CategoryRepository {
-        return CategoryRepositoryImpl(categoryDao, noteDao, Dispatchers.IO)
+    fun provideCategoryRepository(
+        database: AppDatabase,
+        categoryDao: CategoryDao,
+        noteDao: NoteDao
+    ): CategoryRepository {
+        return CategoryRepositoryImpl(database, categoryDao, noteDao, Dispatchers.IO)
     }
 
     @Provides

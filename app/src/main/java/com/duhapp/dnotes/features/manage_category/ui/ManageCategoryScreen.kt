@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
@@ -47,6 +48,7 @@ fun ManageCategoryScreenRoute(
     var showEditSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     MviScreen(
         viewModel = viewModel,
@@ -74,6 +76,11 @@ fun ManageCategoryScreenRoute(
                 is ManageCategoryEffect.ShowError -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(effect.message)
+                    }
+                }
+                is ManageCategoryEffect.ShowErrorRes -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(context.getString(effect.messageRes))
                     }
                 }
             }
@@ -107,17 +114,36 @@ fun ManageCategoryScreenRoute(
         }
 
         categoryToDelete?.let { category ->
-            ConfirmDialog(
-                title = "Delete Category",
-                message = "Are you sure you want to delete category '${category.name}'? All notes in this category will be moved to Default.",
-                onConfirm = {
-                    viewModel.processIntent(ManageCategoryIntent.OnDeleteCategory(category))
-                    categoryToDelete = null
-                },
-                onDismiss = {
-                    categoryToDelete = null
-                }
-            )
+            val otherCategories = state.categories.filter { it.id != category.id }
+            if (category.isDefault) {
+                DeleteDefaultCategoryDialog(
+                    category = category,
+                    candidates = otherCategories,
+                    onConfirm = { newDefaultCategoryId ->
+                        viewModel.processIntent(
+                            ManageCategoryIntent.OnDeleteCategory(category, newDefaultCategoryId)
+                        )
+                        categoryToDelete = null
+                    },
+                    onDismiss = {
+                        categoryToDelete = null
+                    }
+                )
+            } else {
+                val defaultCategoryName = otherCategories
+                    .firstOrNull { it.isDefault }?.name ?: "the default category"
+                ConfirmDialog(
+                    title = "Delete Category",
+                    message = "Are you sure you want to delete category '${category.name}'? All notes in this category will be moved to '$defaultCategoryName'.",
+                    onConfirm = {
+                        viewModel.processIntent(ManageCategoryIntent.OnDeleteCategory(category))
+                        categoryToDelete = null
+                    },
+                    onDismiss = {
+                        categoryToDelete = null
+                    }
+                )
+            }
         }
     }
 }
@@ -177,7 +203,9 @@ fun ManageCategoryScreen(
                             emoji = category.emoji,
                             description = category.description,
                             colorOrdinal = category.color?.color?.ordinal ?: 0,
-                            isDefault = category.isDefault,
+                            // the last remaining category has nothing to hand its notes
+                            // and the default role over to
+                            canDelete = state.categories.size > 1,
                             onClick = { if (isInteractionEnabled) onIntent(ManageCategoryIntent.OnCategoryClick(category)) },
                             onDeleteClick = { if (isInteractionEnabled) onDeleteRequest(category) },
                             enabled = isInteractionEnabled

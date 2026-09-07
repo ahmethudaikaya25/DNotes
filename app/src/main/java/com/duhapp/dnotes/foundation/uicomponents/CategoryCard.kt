@@ -39,7 +39,7 @@ fun CategoryCard(
     emoji: String,
     description: String,
     colorOrdinal: Int,
-    isDefault: Boolean = false,
+    canDelete: Boolean = true,
     onClick: () -> Unit,
     onDeleteClick: () -> Unit,
     enabled: Boolean = true,
@@ -100,7 +100,7 @@ fun CategoryCard(
 
             IconButton(
                 onClick = onDeleteClick,
-                enabled = enabled && !isDefault
+                enabled = enabled && canDelete
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,

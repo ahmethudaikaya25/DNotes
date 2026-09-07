@@ -1,5 +1,6 @@
 package com.duhapp.dnotes.features.manage_category.ui
 
+import androidx.annotation.StringRes
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 import com.duhapp.dnotes.foundation.mvi.UiEffect
 import com.duhapp.dnotes.foundation.mvi.UiIntent
@@ -14,7 +15,10 @@ data class ManageCategoryState(
 sealed interface ManageCategoryIntent : UiIntent {
     object LoadCategories : ManageCategoryIntent
     data class OnCategoryClick(val category: CategoryUIModel) : ManageCategoryIntent
-    data class OnDeleteCategory(val category: CategoryUIModel) : ManageCategoryIntent
+    data class OnDeleteCategory(
+        val category: CategoryUIModel,
+        val newDefaultCategoryId: Int? = null
+    ) : ManageCategoryIntent
     data class OnCategoryDeleted(val categoryName: String) : ManageCategoryIntent
     object OnUndoDelete : ManageCategoryIntent
     object OnAddCategoryClick : ManageCategoryIntent
@@ -26,4 +30,5 @@ sealed interface ManageCategoryEffect : UiEffect {
     data class ShowAddEditCategorySheet(val category: CategoryUIModel? = null) : ManageCategoryEffect
     data class ShowDeleteSuccess(val categoryName: String) : ManageCategoryEffect
     data class ShowError(val message: String) : ManageCategoryEffect
+    data class ShowErrorRes(@StringRes val messageRes: Int) : ManageCategoryEffect
 }

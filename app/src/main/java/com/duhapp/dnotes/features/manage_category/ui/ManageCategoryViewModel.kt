@@ -3,6 +3,7 @@ package com.duhapp.dnotes.features.manage_category.ui
 import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.features.add_or_update_category.domain.DeleteCategory
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
+import com.duhapp.dnotes.features.base.domain.CustomException
 import com.duhapp.dnotes.features.manage_category.domain.GetCategories
 import com.duhapp.dnotes.features.manage_category.domain.UndoCategory
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
@@ -28,7 +29,8 @@ class ManageCategoryViewModel @Inject constructor(
             is ManageCategoryIntent.OnCategoryClick -> {
                 emitEffect(ManageCategoryEffect.ShowAddEditCategorySheet(intent.category))
             }
-            is ManageCategoryIntent.OnDeleteCategory -> handleDeleteCategory(intent.category)
+            is ManageCategoryIntent.OnDeleteCategory ->
+                handleDeleteCategory(intent.category, intent.newDefaultCategoryId)
             is ManageCategoryIntent.OnCategoryDeleted -> {
                 emitEffect(ManageCategoryEffect.ShowDeleteSuccess(intent.categoryName))
                 loadCategories()
@@ -56,12 +58,15 @@ class ManageCategoryViewModel @Inject constructor(
         }
     }
 
-    private fun handleDeleteCategory(category: CategoryUIModel) {
+    private fun handleDeleteCategory(category: CategoryUIModel, newDefaultCategoryId: Int?) {
         viewModelScope.launch {
             try {
-                deleteCategory.invoke(category)
+                deleteCategory.invoke(category, newDefaultCategoryId)
                 emitEffect(ManageCategoryEffect.ShowDeleteSuccess(category.name))
                 loadCategories()
+            } catch (e: CustomException) {
+                Timber.e(e, "Failed to delete category")
+                emitEffect(ManageCategoryEffect.ShowErrorRes(e.data.message))
             } catch (e: Exception) {
                 Timber.e(e, "Failed to delete category")
                 emitEffect(ManageCategoryEffect.ShowError("Failed to delete category"))

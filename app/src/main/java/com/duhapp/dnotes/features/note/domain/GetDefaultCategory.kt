@@ -5,9 +5,13 @@ import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
 
 class GetDefaultCategory(
     private val categoryRepository: CategoryRepository,
-    private val categoryUIModel: CategoryUIModel
+    private val fallbackCategory: CategoryUIModel
 ) {
-    suspend fun invoke() : CategoryUIModel {
-        return categoryRepository.getById(categoryUIModel.id) ?: categoryUIModel
+    suspend fun invoke(): CategoryUIModel {
+        // the default category is whichever row carries the flag; it is not a fixed id
+        // anymore, since the original default can be deleted and replaced by another one
+        return categoryRepository.getDefaultCategory()
+            ?: categoryRepository.getCategories().firstOrNull()
+            ?: fallbackCategory
     }
 }

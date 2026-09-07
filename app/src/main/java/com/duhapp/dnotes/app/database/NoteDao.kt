@@ -18,6 +18,15 @@ interface NoteDao {
     @Query("SELECT * FROM NoteEntity WHERE category_id = :categoryId")
     suspend fun getNoteByCategoryId(categoryId: Int): List<NoteEntity>
 
+    @Query("SELECT id FROM NoteEntity WHERE category_id = :categoryId")
+    suspend fun getNoteIdsByCategoryId(categoryId: Int): List<Int>
+
+    @Query("UPDATE NoteEntity SET category_id = :targetCategoryId WHERE category_id = :sourceCategoryId")
+    suspend fun moveNotesToCategory(sourceCategoryId: Int, targetCategoryId: Int)
+
+    @Query("UPDATE NoteEntity SET category_id = :targetCategoryId WHERE id IN (:noteIds)")
+    suspend fun moveNotesToCategoryByIds(noteIds: List<Int>, targetCategoryId: Int)
+
     @Query("DELETE FROM NoteEntity WHERE id IN (:notes)")
     suspend fun deleteNotes(notes: List<Int>)
 

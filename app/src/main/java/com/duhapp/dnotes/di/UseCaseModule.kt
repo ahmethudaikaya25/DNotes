@@ -28,10 +28,9 @@ object UseCaseModule {
     @Provides
     fun provideDeleteCategory(
         categoryRepository: CategoryRepository,
-        noteRepository: NoteRepository,
         defaultCategory: CategoryUIModel
     ): DeleteCategory {
-        return DeleteCategory(categoryRepository, noteRepository, defaultCategory)
+        return DeleteCategory(categoryRepository, defaultCategory)
     }
 
     @Provides
