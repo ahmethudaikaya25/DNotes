@@ -11,11 +11,11 @@ plugins {
 
 android {
     namespace 'com.duhapp.dnotes'
-    compileSdk 35
+    compileSdk 36
     defaultConfig {
         applicationId "com.duhapp.dnotes"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 33
         versionName "3.3"
 
