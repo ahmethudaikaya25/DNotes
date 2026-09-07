@@ -1,4 +1,4 @@
-package com.duhapp.dnotes.features.manage_category.ui
+package com.duhapp.dnotes.foundation.uicomponents
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

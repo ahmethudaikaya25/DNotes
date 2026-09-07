@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,12 +58,19 @@ import com.duhapp.dnotes.foundation.theme.toPalette
 import com.duhapp.dnotes.foundation.uicomponents.BaseModalSheet
 import com.duhapp.dnotes.foundation.uicomponents.ColorSelectorRow
 import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
+import com.duhapp.dnotes.foundation.uicomponents.DeleteDefaultCategoryDialog
 
+/**
+ * @param otherCategories Every category except the edited one. A category can only be deleted
+ * when this is not empty, since its notes — and, for the default category, the default role —
+ * have to be handed over to one of them.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditCategorySheet(
     category: CategoryUIModel?,
     showType: CategoryShowType,
+    otherCategories: List<CategoryUIModel> = emptyList(),
     onDismissRequest: () -> Unit,
     onSaved: () -> Unit,
     onDeleted: (String) -> Unit = {},
@@ -86,9 +94,16 @@ fun AddEditCategorySheet(
             }
         }
     ) { state ->
+        // the default category is deletable too, as long as another category is left to take
+        // both its notes and the default role over
+        val canDelete = state.showType == CategoryShowType.Edit &&
+            state.category.id > 0 &&
+            otherCategories.isNotEmpty()
+
         BaseModalSheet(onDismissRequest = { viewModel.processIntent(CategoryAddEditIntent.Dismiss) }) {
             AddEditCategoryContent(
                 state = state,
+                canDelete = canDelete,
                 onIntent = viewModel::processIntent,
                 onEmojiClick = { showEmojiDialog = true },
                 onDeleteClick = { showDeleteDialog = true }
@@ -96,14 +111,30 @@ fun AddEditCategorySheet(
         }
 
         if (showDeleteDialog) {
-            ConfirmDialog(
-                title = "Delete Category",
-                message = "Are you sure you want to delete category '${state.category.name}'? " +
-                    "All notes in this category will be moved to Default.",
-                confirmText = "Delete",
-                onConfirm = { viewModel.processIntent(CategoryAddEditIntent.DeleteCategory) },
-                onDismiss = { showDeleteDialog = false }
-            )
+            if (state.category.isDefault) {
+                DeleteDefaultCategoryDialog(
+                    category = state.category,
+                    candidates = otherCategories,
+                    onConfirm = { newDefaultCategoryId ->
+                        viewModel.processIntent(
+                            CategoryAddEditIntent.DeleteCategory(newDefaultCategoryId)
+                        )
+                        showDeleteDialog = false
+                    },
+                    onDismiss = { showDeleteDialog = false }
+                )
+            } else {
+                val defaultCategoryName = otherCategories
+                    .firstOrNull { it.isDefault }?.name ?: "the default category"
+                ConfirmDialog(
+                    title = "Delete Category",
+                    message = "Are you sure you want to delete category '${state.category.name}'? " +
+                        "All notes in this category will be moved to '$defaultCategoryName'.",
+                    confirmText = "Delete",
+                    onConfirm = { viewModel.processIntent(CategoryAddEditIntent.DeleteCategory()) },
+                    onDismiss = { showDeleteDialog = false }
+                )
+            }
         }
 
         if (showEmojiDialog) {
@@ -122,15 +153,15 @@ fun AddEditCategorySheet(
 @Composable
 private fun AddEditCategoryContent(
     state: CategoryAddEditState,
+    canDelete: Boolean,
     onIntent: (CategoryAddEditIntent) -> Unit,
     onEmojiClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     val title = if (state.showType == CategoryShowType.Add) "Add Category" else "Edit Category"
     val palette = state.category.color.color.toPalette()
-    val canDelete = state.showType == CategoryShowType.Edit &&
-        state.category.id > 0 &&
-        !state.category.isDefault
+    val errorMessage = state.errorMessage
+        ?: state.errorMessageRes?.let { stringResource(id = it) }
 
     Column(
         modifier = Modifier
@@ -198,7 +229,7 @@ private fun AddEditCategoryContent(
             onColorSelected = { onIntent(CategoryAddEditIntent.SelectColor(it)) }
         )
 
-        state.errorMessage?.let { message ->
+        errorMessage?.let { message ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = message,

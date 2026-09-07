@@ -1,5 +1,6 @@
 package com.duhapp.dnotes.features.add_or_update_category.ui
 
+import androidx.annotation.StringRes
 import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.foundation.mvi.UiEffect
 import com.duhapp.dnotes.foundation.mvi.UiIntent
@@ -13,7 +14,9 @@ data class CategoryAddEditState(
     val showType: CategoryShowType = CategoryShowType.Add,
     val hasSelectedEmoji: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    /** Error coming from the domain layer, which reports failures as string resources. */
+    @StringRes val errorMessageRes: Int? = null
 ) : UiState {
 
     /** True when every field the user has to provide is filled in. */
@@ -47,7 +50,12 @@ sealed interface CategoryAddEditIntent : UiIntent {
     data class UpdateEmoji(val emoji: String) : CategoryAddEditIntent
     data class SelectColor(val color: NoteColor) : CategoryAddEditIntent
     object SaveCategory : CategoryAddEditIntent
-    object DeleteCategory : CategoryAddEditIntent
+
+    /**
+     * @param newDefaultCategoryId The category that takes over the default role, required
+     * when the category being deleted is the default one.
+     */
+    data class DeleteCategory(val newDefaultCategoryId: Int? = null) : CategoryAddEditIntent
     object Dismiss : CategoryAddEditIntent
 }
 

@@ -1,9 +1,11 @@
 package com.duhapp.dnotes.features.add_or_update_category.ui
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.NoteColor
 import com.duhapp.dnotes.features.add_or_update_category.domain.DeleteCategory
 import com.duhapp.dnotes.features.add_or_update_category.domain.UpsertCategory
+import com.duhapp.dnotes.features.base.domain.CustomException
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -38,16 +40,27 @@ class CategoryAddEditViewModel @Inject constructor(
                         hasSelectedEmoji = category.emoji.isNotBlank(),
                         isLoading = false,
                         errorMessage = null,
+                        errorMessageRes = null,
                         colors = colors.map { it.copy(isSelected = it.color == category.color.color) }
                     )
                 }
             }
             is CategoryAddEditIntent.UpdateName -> {
-                updateState { copy(category = category.copy(name = intent.name), errorMessage = null) }
+                updateState {
+                    copy(
+                        category = category.copy(name = intent.name),
+                        errorMessage = null,
+                        errorMessageRes = null
+                    )
+                }
             }
             is CategoryAddEditIntent.UpdateDescription -> {
                 updateState {
-                    copy(category = category.copy(description = intent.description), errorMessage = null)
+                    copy(
+                        category = category.copy(description = intent.description),
+                        errorMessage = null,
+                        errorMessageRes = null
+                    )
                 }
             }
             is CategoryAddEditIntent.UpdateEmoji -> {
@@ -55,7 +68,8 @@ class CategoryAddEditViewModel @Inject constructor(
                     copy(
                         category = category.copy(emoji = intent.emoji),
                         hasSelectedEmoji = intent.emoji.isNotBlank(),
-                        errorMessage = null
+                        errorMessage = null,
+                        errorMessageRes = null
                     )
                 }
             }
@@ -64,35 +78,40 @@ class CategoryAddEditViewModel @Inject constructor(
                     copy(
                         category = category.copy(color = ColorItemUIModel(color = intent.color)),
                         colors = colors.map { it.copy(isSelected = it.color == intent.color) },
-                        errorMessage = null
+                        errorMessage = null,
+                        errorMessageRes = null
                     )
                 }
             }
             is CategoryAddEditIntent.SaveCategory -> saveCategory()
-            is CategoryAddEditIntent.DeleteCategory -> handleDeleteCategory()
+            is CategoryAddEditIntent.DeleteCategory ->
+                handleDeleteCategory(intent.newDefaultCategoryId)
             is CategoryAddEditIntent.Dismiss -> emitEffect(CategoryAddEditEffect.Dismiss)
         }
     }
 
-    private fun handleDeleteCategory() {
+    /**
+     * Deletes the edited category, the default one included. Deleting the default requires
+     * [newDefaultCategoryId] to name the category that takes the role over; the sheet asks
+     * for it before sending this intent.
+     */
+    private fun handleDeleteCategory(newDefaultCategoryId: Int?) {
         val category = currentState.category
-        if (category.isDefault) {
-            // deleting the default needs a replacement to be picked, which only the
-            // category list offers
-            showError("To delete the default category, use the delete button in the category list")
-            return
-        }
         if (currentState.showType != CategoryShowType.Edit || category.id <= 0) {
             showError("This category cannot be deleted")
             return
         }
 
-        updateState { copy(isLoading = true, errorMessage = null) }
+        updateState { copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
         viewModelScope.launch {
             try {
-                deleteCategory.invoke(category)
+                deleteCategory.invoke(category, newDefaultCategoryId)
                 emitEffect(CategoryAddEditEffect.CategoryDeleted(category.name))
                 emitEffect(CategoryAddEditEffect.Dismiss)
+            } catch (e: CustomException) {
+                Timber.e(e, "Failed to delete category")
+                updateState { copy(isLoading = false) }
+                showError(e.data.message)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to delete category")
                 updateState { copy(isLoading = false) }
@@ -111,7 +130,7 @@ class CategoryAddEditViewModel @Inject constructor(
             return
         }
 
-        updateState { copy(isLoading = true, errorMessage = null) }
+        updateState { copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
         viewModelScope.launch {
             try {
                 val saved = currentState.category
@@ -129,7 +148,12 @@ class CategoryAddEditViewModel @Inject constructor(
     }
 
     private fun showError(message: String) {
-        updateState { copy(errorMessage = message) }
+        updateState { copy(errorMessage = message, errorMessageRes = null) }
         emitEffect(CategoryAddEditEffect.ShowError(message))
+    }
+
+    /** Surfaces a failure the domain layer reported as a string resource. */
+    private fun showError(@StringRes messageRes: Int) {
+        updateState { copy(errorMessage = null, errorMessageRes = messageRes) }
     }
 }

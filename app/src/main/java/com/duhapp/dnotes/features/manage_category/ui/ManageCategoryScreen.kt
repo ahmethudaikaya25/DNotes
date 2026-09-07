@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
+import com.duhapp.dnotes.R
 import com.duhapp.dnotes.features.add_or_update_category.ui.AddEditCategorySheet
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryShowType
 import com.duhapp.dnotes.features.add_or_update_category.ui.CategoryUIModel
@@ -34,6 +35,7 @@ import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.uicomponents.BaseScreenScaffold
 import com.duhapp.dnotes.foundation.uicomponents.CategoryCard
 import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
+import com.duhapp.dnotes.foundation.uicomponents.DeleteDefaultCategoryDialog
 import com.duhapp.dnotes.foundation.uicomponents.EmptyStateView
 import com.duhapp.dnotes.foundation.uicomponents.LoadingScreen
 
@@ -92,7 +94,19 @@ fun ManageCategoryScreenRoute(
             ManageCategoryScreen(
                 state = state,
                 onIntent = viewModel::processIntent,
-                onDeleteRequest = { categoryToDelete = it },
+                onDeleteRequest = { category ->
+                    // the last remaining category has nothing to hand its notes and the
+                    // default role over to, so say that instead of opening a dead dialog
+                    if (state.categories.size <= 1) {
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                context.getString(R.string.Last_Category_Could_Not_Be_Deleted)
+                            )
+                        }
+                    } else {
+                        categoryToDelete = category
+                    }
+                },
                 isInteractionEnabled = !showEditSheet && categoryToDelete == null
             )
         }
@@ -101,6 +115,7 @@ fun ManageCategoryScreenRoute(
             AddEditCategorySheet(
                 category = categoryBeingEdited,
                 showType = showType,
+                otherCategories = state.categories.filter { it.id != categoryBeingEdited?.id },
                 onDismissRequest = { showEditSheet = false },
                 onSaved = { 
                     showEditSheet = false
@@ -203,9 +218,6 @@ fun ManageCategoryScreen(
                             emoji = category.emoji,
                             description = category.description,
                             colorOrdinal = category.color?.color?.ordinal ?: 0,
-                            // the last remaining category has nothing to hand its notes
-                            // and the default role over to
-                            canDelete = state.categories.size > 1,
                             onClick = { if (isInteractionEnabled) onIntent(ManageCategoryIntent.OnCategoryClick(category)) },
                             onDeleteClick = { if (isInteractionEnabled) onDeleteRequest(category) },
                             enabled = isInteractionEnabled
