@@ -2,6 +2,7 @@ package com.duhapp.dnotes.features.add_or_update_category.ui
 
 import androidx.lifecycle.viewModelScope
 import com.duhapp.dnotes.NoteColor
+import com.duhapp.dnotes.features.add_or_update_category.domain.DeleteCategory
 import com.duhapp.dnotes.features.add_or_update_category.domain.UpsertCategory
 import com.duhapp.dnotes.foundation.mvi.MviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,7 +12,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CategoryAddEditViewModel @Inject constructor(
-    private val upsertCategory: UpsertCategory
+    private val upsertCategory: UpsertCategory,
+    private val deleteCategory: DeleteCategory,
 ) : MviViewModel<CategoryAddEditIntent, CategoryAddEditState, CategoryAddEditEffect>(CategoryAddEditState()) {
 
     init {
@@ -60,7 +62,29 @@ class CategoryAddEditViewModel @Inject constructor(
                 }
             }
             is CategoryAddEditIntent.SaveCategory -> saveCategory()
+            is CategoryAddEditIntent.DeleteCategory -> handleDeleteCategory()
             is CategoryAddEditIntent.Dismiss -> emitEffect(CategoryAddEditEffect.Dismiss)
+        }
+    }
+
+    private fun handleDeleteCategory() {
+        val category = currentState.category
+        if (currentState.showType != CategoryShowType.Edit || category.id < 0 || category.isDefault) {
+            emitEffect(CategoryAddEditEffect.ShowError("This category cannot be deleted"))
+            return
+        }
+
+        updateState { copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                deleteCategory.invoke(category)
+                emitEffect(CategoryAddEditEffect.CategoryDeleted(category.name))
+                emitEffect(CategoryAddEditEffect.Dismiss)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to delete category")
+                updateState { copy(isLoading = false) }
+                emitEffect(CategoryAddEditEffect.ShowError("Failed to delete category"))
+            }
         }
     }
 

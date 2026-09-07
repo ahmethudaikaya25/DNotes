@@ -29,6 +29,10 @@ class ManageCategoryViewModel @Inject constructor(
                 emitEffect(ManageCategoryEffect.ShowAddEditCategorySheet(intent.category))
             }
             is ManageCategoryIntent.OnDeleteCategory -> handleDeleteCategory(intent.category)
+            is ManageCategoryIntent.OnCategoryDeleted -> {
+                emitEffect(ManageCategoryEffect.ShowDeleteSuccess(intent.categoryName))
+                loadCategories()
+            }
             is ManageCategoryIntent.OnUndoDelete -> handleUndoDelete()
             is ManageCategoryIntent.OnAddCategoryClick -> {
                 emitEffect(ManageCategoryEffect.ShowAddEditCategorySheet(null))

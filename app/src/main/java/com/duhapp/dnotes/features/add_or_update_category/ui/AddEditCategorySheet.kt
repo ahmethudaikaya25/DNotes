@@ -1,5 +1,6 @@
 package com.duhapp.dnotes.features.add_or_update_category.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,17 +15,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -50,6 +56,7 @@ import com.duhapp.dnotes.foundation.mvi.MviScreen
 import com.duhapp.dnotes.foundation.theme.toPalette
 import com.duhapp.dnotes.foundation.uicomponents.BaseModalSheet
 import com.duhapp.dnotes.foundation.uicomponents.ColorSelectorRow
+import com.duhapp.dnotes.foundation.uicomponents.ConfirmDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,9 +65,11 @@ fun AddEditCategorySheet(
     showType: CategoryShowType,
     onDismissRequest: () -> Unit,
     onSaved: () -> Unit,
+    onDeleted: (String) -> Unit = {},
     viewModel: CategoryAddEditViewModel = hiltViewModel()
 ) {
     var showEmojiDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(category, showType) {
         viewModel.processIntent(CategoryAddEditIntent.Init(category, showType))
@@ -71,6 +80,7 @@ fun AddEditCategorySheet(
         onEffect = { effect ->
             when (effect) {
                 is CategoryAddEditEffect.CategorySaved -> onSaved()
+                is CategoryAddEditEffect.CategoryDeleted -> onDeleted(effect.categoryName)
                 is CategoryAddEditEffect.Dismiss -> onDismissRequest()
                 is CategoryAddEditEffect.ShowError -> Unit
             }
@@ -80,7 +90,19 @@ fun AddEditCategorySheet(
             AddEditCategoryContent(
                 state = state,
                 onIntent = viewModel::processIntent,
-                onEmojiClick = { showEmojiDialog = true }
+                onEmojiClick = { showEmojiDialog = true },
+                onDeleteClick = { showDeleteDialog = true }
+            )
+        }
+
+        if (showDeleteDialog) {
+            ConfirmDialog(
+                title = "Delete Category",
+                message = "Are you sure you want to delete category '${state.category.name}'? " +
+                    "All notes in this category will be moved to Default.",
+                confirmText = "Delete",
+                onConfirm = { viewModel.processIntent(CategoryAddEditIntent.DeleteCategory) },
+                onDismiss = { showDeleteDialog = false }
             )
         }
 
@@ -101,7 +123,8 @@ fun AddEditCategorySheet(
 private fun AddEditCategoryContent(
     state: CategoryAddEditState,
     onIntent: (CategoryAddEditIntent) -> Unit,
-    onEmojiClick: () -> Unit
+    onEmojiClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     val title = if (state.showType == CategoryShowType.Add) "Add Category" else "Edit Category"
     val palette = state.category.color.color.toPalette()
@@ -110,6 +133,9 @@ private fun AddEditCategoryContent(
         (state.showType == CategoryShowType.Edit || state.hasSelectedEmoji) &&
         state.category.emoji.isNotBlank() &&
         !state.isLoading
+    val canDelete = state.showType == CategoryShowType.Edit &&
+        state.category.id > 0 &&
+        !state.category.isDefault
 
     Column(
         modifier = Modifier
@@ -197,6 +223,34 @@ private fun AddEditCategoryContent(
                 text = if (state.showType == CategoryShowType.Add) "Create" else "Update",
                 style = MaterialTheme.typography.titleMedium
             )
+        }
+
+        if (canDelete) {
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = onDeleteClick,
+                enabled = !state.isLoading,
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Delete Category",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
     }
 }

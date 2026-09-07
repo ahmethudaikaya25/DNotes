@@ -21,11 +21,13 @@ sealed interface CategoryAddEditIntent : UiIntent {
     data class UpdateEmoji(val emoji: String) : CategoryAddEditIntent
     data class SelectColor(val color: NoteColor) : CategoryAddEditIntent
     object SaveCategory : CategoryAddEditIntent
+    object DeleteCategory : CategoryAddEditIntent
     object Dismiss : CategoryAddEditIntent
 }
 
 sealed interface CategoryAddEditEffect : UiEffect {
     object CategorySaved : CategoryAddEditEffect
+    data class CategoryDeleted(val categoryName: String) : CategoryAddEditEffect
     object Dismiss : CategoryAddEditEffect
     data class ShowError(val message: String) : CategoryAddEditEffect
 }

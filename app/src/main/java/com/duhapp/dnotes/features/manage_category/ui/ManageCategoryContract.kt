@@ -15,6 +15,7 @@ sealed interface ManageCategoryIntent : UiIntent {
     object LoadCategories : ManageCategoryIntent
     data class OnCategoryClick(val category: CategoryUIModel) : ManageCategoryIntent
     data class OnDeleteCategory(val category: CategoryUIModel) : ManageCategoryIntent
+    data class OnCategoryDeleted(val categoryName: String) : ManageCategoryIntent
     object OnUndoDelete : ManageCategoryIntent
     object OnAddCategoryClick : ManageCategoryIntent
     object NavigationBack : ManageCategoryIntent

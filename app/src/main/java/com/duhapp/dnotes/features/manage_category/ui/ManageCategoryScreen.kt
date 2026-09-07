@@ -98,6 +98,10 @@ fun ManageCategoryScreenRoute(
                 onSaved = { 
                     showEditSheet = false
                     viewModel.processIntent(ManageCategoryIntent.LoadCategories)
+                },
+                onDeleted = { categoryName ->
+                    showEditSheet = false
+                    viewModel.processIntent(ManageCategoryIntent.OnCategoryDeleted(categoryName))
                 }
             )
         }
