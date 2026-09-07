@@ -163,10 +163,15 @@ class CategoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateCategory(categoryUIModel: CategoryUIModel) {
-        val category = categoryUIModel.toEntity()
-        category.id = categoryUIModel.id
         runOnIO {
             try {
+                // CategoryUIModel does not carry sort_order, so it is read back from the
+                // stored row to keep @Update from resetting it to the default 0.
+                val stored = categoryDao.getById(categoryUIModel.id)
+                val category = categoryUIModel
+                    .toEntity()
+                    .copy(sortOrder = stored?.sortOrder ?: 0)
+                category.id = categoryUIModel.id
                 categoryDao.update(category)
             } catch (e: Exception) {
                 Timber.e(e)

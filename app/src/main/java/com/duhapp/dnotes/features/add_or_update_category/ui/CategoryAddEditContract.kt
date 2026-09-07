@@ -7,12 +7,38 @@ import com.duhapp.dnotes.foundation.mvi.UiState
 
 data class CategoryAddEditState(
     val category: CategoryUIModel = CategoryUIModel(),
+    /** Snapshot taken on [CategoryAddEditIntent.Init], used to detect edits. */
+    val initialCategory: CategoryUIModel = CategoryUIModel(),
     val colors: List<ColorItemUIModel> = emptyList(),
     val showType: CategoryShowType = CategoryShowType.Add,
     val hasSelectedEmoji: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null
-) : UiState
+) : UiState {
+
+    /** True when every field the user has to provide is filled in. */
+    val isFilled: Boolean
+        get() = category.name.isNotBlank() &&
+            category.description.isNotBlank() &&
+            category.emoji.isNotBlank()
+
+    /**
+     * Compares each editable field on its own instead of the whole model, because
+     * [CategoryUIModel] and [ColorItemUIModel] carry mutable/ui-only fields (id,
+     * isSelected) that must not take part in the comparison. A color-only change
+     * therefore counts as a change just like a renamed category does.
+     */
+    val hasChanges: Boolean
+        get() = category.name != initialCategory.name ||
+            category.description != initialCategory.description ||
+            category.emoji != initialCategory.emoji ||
+            category.color.color != initialCategory.color.color ||
+            category.isDefault != initialCategory.isDefault
+
+    /** Saving is only allowed for a complete category that actually differs from the stored one. */
+    val canSave: Boolean
+        get() = isFilled && hasChanges && !isLoading
+}
 
 sealed interface CategoryAddEditIntent : UiIntent {
     data class Init(val category: CategoryUIModel?, val showType: CategoryShowType) : CategoryAddEditIntent

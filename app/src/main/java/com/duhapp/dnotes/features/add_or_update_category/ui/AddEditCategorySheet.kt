@@ -128,11 +128,6 @@ private fun AddEditCategoryContent(
 ) {
     val title = if (state.showType == CategoryShowType.Add) "Add Category" else "Edit Category"
     val palette = state.category.color.color.toPalette()
-    val isSaveEnabled = state.category.name.isNotBlank() &&
-        state.category.description.isNotBlank() &&
-        (state.showType == CategoryShowType.Edit || state.hasSelectedEmoji) &&
-        state.category.emoji.isNotBlank() &&
-        !state.isLoading
     val canDelete = state.showType == CategoryShowType.Edit &&
         state.category.id > 0 &&
         !state.category.isDefault
@@ -203,11 +198,23 @@ private fun AddEditCategoryContent(
             onColorSelected = { onIntent(CategoryAddEditIntent.SelectColor(it)) }
         )
 
+        state.errorMessage?.let { message ->
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Start)
+            )
+        }
+
         Spacer(modifier = Modifier.height(28.dp))
 
         Button(
             onClick = { onIntent(CategoryAddEditIntent.SaveCategory) },
-            enabled = isSaveEnabled,
+            enabled = state.canSave,
             colors = ButtonDefaults.buttonColors(
                 containerColor = palette.accent,
                 contentColor = palette.onAccent,
